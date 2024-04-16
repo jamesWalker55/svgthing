@@ -3,7 +3,12 @@ mod map_colors;
 mod parser;
 mod render;
 
-use std::{collections::HashMap, fs, num::NonZeroU32, path::PathBuf};
+use std::{
+    collections::HashMap,
+    fs,
+    num::NonZeroU32,
+    path::{Path, PathBuf},
+};
 
 use bpaf::Bpaf;
 use parser::Color;
@@ -17,7 +22,7 @@ use crate::{
 #[bpaf(options)]
 pub struct Options {
     #[bpaf(external(task), some("at least one task must be specified"))]
-    pub tasks: Vec<Task>,
+    tasks: Vec<Task>,
 }
 
 #[derive(Debug, Clone, Bpaf)]
@@ -67,7 +72,35 @@ enum TileSetting {
 fn main() {
     let opt = options().run();
 
-    let paths = fs::read_dir("svg").expect("failed to list paths in folder ./svg");
+    let mut input_paths_count: HashMap<&Path, u32> = HashMap::new();
+
+    // group the tasks by their input paths
+    for mut task in opt.tasks {
+        // canonicalize paths to ensure paths that point to the same place (relative or absolute) will end up as the same PathBuf
+        task.input = match task.input.canonicalize() {
+            Ok(x) => {
+                if !x.is_file() {
+                    println!("Input file `{}` is not a file", task.input.display(),);
+                    return;
+                }
+                x
+            }
+            Err(err) => {
+                println!(
+                    "Failed to locate input file `{}`: {}",
+                    task.input.display(),
+                    err
+                );
+                return;
+            }
+        };
+
+        let input_path = task.input.as_path();
+        match input_paths_count.get(&input_path) {
+            Some(count) => input_paths_count.insert(&input_path, count + 1),
+            None => input_paths_count.insert(&input_path, 1),
+        };
+    }
 
     let fontdb = {
         let mut db = resvg::usvg::fontdb::Database::new();
