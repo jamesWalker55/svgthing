@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 15 11" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,-839,-846)">
+        <g transform="matrix(1.13981,0,0,0.894792,0,0)">
+            <g id="tab_up_sel" transform="matrix(0.855937,0,0,0.660421,670.284,901.467)">
+                <g transform="matrix(2,0,0,1.46667,13.4531,-79.9574)">
+                    <rect x="31.711" y="99.947" width="7.688" height="12.692" style="fill:none;"/>
+                    <clipPath id="_clip1">
+                        <rect x="31.711" y="99.947" width="7.688" height="12.692"/>
+                    </clipPath>
+                    <g clip-path="url(#_clip1)">
+                        <g transform="matrix(3.5875,0,0,1.15379,-86.6766,27.2582)">
+                            <rect x="33" y="63" width="1" height="1" style="fill:rgb(255,0,255);"/>
+                        </g>
+                        <g transform="matrix(-2.5625,-7.06491e-16,6.27631e-17,-1.15379,123.961,185.327)">
+                            <rect x="33" y="63" width="1" height="1" style="fill:rgb(255,0,255);"/>
+                        </g>
+                        <g transform="matrix(0,3.46136,-0.5125,8.07435e-17,64.5109,-14.2781)">
+                            <rect x="33" y="63" width="1" height="1" style="fill:rgb(255,0,255);"/>
+                        </g>
+                        <g transform="matrix(1.88289e-16,-3.46136,0.5125,6.05547e-17,6.59844,226.863)">
+                            <rect x="33" y="63" width="1" height="1" style="fill:rgb(255,0,255);"/>
+                        </g>
+                    </g>
+                </g>
+                <g transform="matrix(0.118269,0,0,1.69222,-16.0058,-1363.3)">
+                    <rect x="846" y="846" width="26" height="9" style="fill:rgb(45,45,45);"/>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

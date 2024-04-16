@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 5 5" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,-123,-1200)">
+        <g transform="matrix(1.13981,0,0,0.894792,0,0)">
+            <g id="piano_white_key_sel" transform="matrix(0.913,0,0,0.704449,37.7254,1294.16)">
+                <g transform="matrix(0.625,0,0,0.625,57.0557,4.16445)">
+                    <rect x="31.711" y="99.947" width="7.688" height="12.692" style="fill:none;"/>
+                    <clipPath id="_clip1">
+                        <rect x="31.711" y="99.947" width="7.688" height="12.692"/>
+                    </clipPath>
+                    <g clip-path="url(#_clip1)">
+                        <g transform="matrix(3.075,0,0,2.53833,-69.7641,-59.9681)">
+                            <rect x="33" y="63" width="1" height="1" style="fill:rgb(255,0,255);"/>
+                        </g>
+                        <g transform="matrix(-3.075,-6.21712e-16,1.88289e-16,-2.53833,140.873,272.553)">
+                            <rect x="33" y="63" width="1" height="1" style="fill:rgb(255,0,255);"/>
+                        </g>
+                        <g transform="matrix(-9.41447e-17,5.07666,-1.5375,1.70233e-16,130.111,-67.5831)">
+                            <rect x="33" y="63" width="1" height="1" style="fill:rgb(255,0,255);"/>
+                        </g>
+                        <g transform="matrix(4.70724e-16,-5.07666,1.5375,1.40623e-16,-59.0016,280.168)">
+                            <rect x="33" y="63" width="1" height="1" style="fill:rgb(255,0,255);"/>
+                        </g>
+                    </g>
+                </g>
+                <g transform="matrix(0.960938,0,0,1.58646,-28.8281,-1837.12)">
+                    <rect x="111" y="1201" width="3" height="3" style="fill:rgb(204,153,204);"/>
+                </g>
+                <g transform="matrix(0.960938,0,0,0.528819,-28.8281,-566.894)">
+                    <rect x="111" y="1201" width="3" height="3" style="fill:rgb(45,45,45);"/>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

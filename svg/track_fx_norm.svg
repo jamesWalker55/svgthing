@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 66 18" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,-457,-281)">
+        <g transform="matrix(1.13981,0,0,0.894792,0,0)">
+            <g id="track_fx_norm" transform="matrix(0.913,0,0,0.704449,163.184,0)">
+                <g transform="matrix(1.44141,0,0,1.81309,-82.1602,342.221)">
+                    <rect x="253" y="58" width="14" height="14" style="fill:rgb(242,240,236);fill-opacity:0.06;"/>
+                </g>
+                <g transform="matrix(0.960938,0,0,1.58646,-1366.07,-54.2587)">
+                    <g transform="matrix(12,0,0,12,1711.36,328.932)">
+                    </g>
+                    <text x="1696.09px" y="328.932px" style="font-family:'Inter-Italic', 'Inter';font-style:italic;font-size:12px;fill:rgb(153,204,153);">FX</text>
+                </g>
+                <g transform="matrix(0.960938,0,0,1.58646,-1344.93,-54.2587)">
+                    <g transform="matrix(12,0,0,12,1711.36,328.932)">
+                    </g>
+                    <text x="1696.09px" y="328.932px" style="font-family:'Inter-Italic', 'Inter';font-style:italic;font-size:12px;fill:rgb(153,204,153);">FX</text>
+                </g>
+                <g transform="matrix(0.960938,0,0,1.58646,-1323.79,-54.2587)">
+                    <g transform="matrix(12,0,0,12,1711.36,328.932)">
+                    </g>
+                    <text x="1696.09px" y="328.932px" style="font-family:'Inter-Italic', 'Inter';font-style:italic;font-size:12px;fill:rgb(30,30,30);">FX</text>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

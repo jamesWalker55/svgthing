@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 4 5" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,-297,-553)">
+        <g transform="matrix(1.13981,0,0,0.894792,0,0)">
+            <g id="mcp_custom_bg" transform="matrix(0.913,0,0,0.704449,170.203,578.906)">
+                <g id="n1-bg" serif:id="n1 bg" transform="matrix(0.040891,0,0,0.113318,20.3228,23.2303)">
+                    <rect x="1947" y="313" width="47" height="28" style="fill:rgb(45,45,45);"/>
+                </g>
+                <g id="track-no.-divider-line" serif:id="track no. divider line" transform="matrix(0.160156,0,0,0.0857544,-168.965,32.115)">
+                    <rect x="1685" y="310" width="6" height="37" style="fill:rgb(30,30,30);"/>
+                </g>
+                <g id="n-1-divider-line" serif:id="n-1 divider line" transform="matrix(0.0343192,0,0,0.0661024,42.4528,38.2733)">
+                    <rect x="1675" y="333" width="56" height="24" style="fill:rgb(30,30,30);"/>
+                </g>
+                <g id="n-1-divider-line1" serif:id="n-1 divider line" transform="matrix(0.0343192,0,0,0.0661024,42.4528,35.1004)">
+                    <rect x="1675" y="333" width="56" height="24" style="fill:rgb(30,30,30);"/>
+                </g>
+                <g transform="matrix(0.5,0,0,0.625,83.1211,-6.94075)">
+                    <rect x="31.711" y="99.947" width="7.688" height="12.692" style="fill:none;"/>
+                    <clipPath id="_clip1">
+                        <rect x="31.711" y="99.947" width="7.688" height="12.692"/>
+                    </clipPath>
+                    <g clip-path="url(#_clip1)">
+                        <g transform="matrix(1.92188,0,0,5.07666,-31.7109,-219.883)">
+                            <rect x="33" y="63" width="1" height="1" style="fill:rgb(255,0,255);"/>
+                        </g>
+                        <g transform="matrix(5.88405e-16,-5.07666,1.92188,1.40623e-16,-83.6016,280.168)">
+                            <rect x="33" y="63" width="1" height="1" style="fill:rgb(255,0,255);"/>
+                        </g>
+                        <g transform="matrix(3.84375,4.66284e-16,1.12096e-17,2.53833,-91.2891,-49.8148)">
+                            <rect x="33" y="63" width="1" height="1" style="fill:rgb(255,0,255);"/>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

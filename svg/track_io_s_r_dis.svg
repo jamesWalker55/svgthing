@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 108 18" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,-457,-162)">
+        <g transform="matrix(1.13981,0,0,0.894792,0,0)">
+            <g id="track_io_s_r_dis" transform="matrix(0.913,0,0,0.704449,163.184,0)">
+                <g transform="matrix(2.19643,0,0,1.81309,-258.767,153.433)">
+                    <rect x="253" y="58" width="14" height="14" style="fill:rgb(242,240,236);fill-opacity:0.06;"/>
+                </g>
+                <g transform="matrix(0.960938,0,0,1.58646,-1581.74,-274.409)">
+                    <g>
+                        <text x="1923.65px" y="347.544px" style="font-family:'Inter-Regular', 'Inter';font-size:12px;fill:rgb(255,204,102);">&gt;</text>
+                        <text x="1931.59px" y="347.544px" style="font-family:'Inter-Regular', 'Inter';font-size:12px;fill:rgb(81,81,81);">&gt;</text>
+                        <g transform="matrix(12,0,0,12,1947.47,347.544)">
+                        </g>
+                        <text x="1939.53px" y="347.544px" style="font-family:'Inter-Regular', 'Inter';font-size:12px;fill:rgb(102,204,204);">&gt;</text>
+                    </g>
+                </g>
+                <g transform="matrix(0.960938,0,0,1.58646,-1547.15,-274.409)">
+                    <g>
+                        <text x="1923.65px" y="347.544px" style="font-family:'Inter-Regular', 'Inter';font-size:12px;fill:rgb(255,204,102);">&gt;</text>
+                        <text x="1931.59px" y="347.544px" style="font-family:'Inter-Regular', 'Inter';font-size:12px;fill:rgb(81,81,81);">&gt;</text>
+                        <g transform="matrix(12,0,0,12,1947.47,347.544)">
+                        </g>
+                        <text x="1939.53px" y="347.544px" style="font-family:'Inter-Regular', 'Inter';font-size:12px;fill:rgb(102,204,204);">&gt;</text>
+                    </g>
+                </g>
+                <g transform="matrix(0.960938,0,0,1.58646,-1512.55,-274.409)">
+                    <g>
+                        <text x="1923.65px" y="347.544px" style="font-family:'Inter-Regular', 'Inter';font-size:12px;fill:rgb(255,204,102);">&gt;</text>
+                        <text x="1931.59px" y="347.544px" style="font-family:'Inter-Regular', 'Inter';font-size:12px;fill:rgb(81,81,81);">&gt;</text>
+                        <g transform="matrix(12,0,0,12,1947.47,347.544)">
+                        </g>
+                        <text x="1939.53px" y="347.544px" style="font-family:'Inter-Regular', 'Inter';font-size:12px;fill:rgb(102,204,204);">&gt;</text>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 22 14" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,-761,-551)">
+        <g transform="matrix(1.13981,0,0,0.894792,0,0)">
+            <g id="mcp_fxlist_bg" transform="matrix(3.02193,0,0,2.35005,-7488.06,-7412.79)">
+                <g transform="matrix(1,0,0,1,-10.4516,-4.54747e-13)">
+                    <g transform="matrix(1.74194,0,0,0.475556,-2476.16,1420.91)">
+                        <rect x="2977" y="4196" width="1" height="1" style="fill:rgb(255,0,255);"/>
+                    </g>
+                    <g transform="matrix(0.290323,0,0,0.475556,1845,1421.39)">
+                        <rect x="2977" y="4196" width="1" height="1" style="fill:rgb(255,0,255);"/>
+                    </g>
+                    <g transform="matrix(0.290323,0,0,0.475556,1845,1420.91)">
+                        <rect x="2977" y="4196" width="1" height="1" style="fill:rgb(255,255,0);"/>
+                    </g>
+                </g>
+                <g transform="matrix(1,0,0,1,-9.29032,3.80444)">
+                    <g transform="matrix(0.290323,0,0,0.951111,1849.94,-572.615)">
+                        <rect x="2977" y="4196" width="1" height="1" style="fill:rgb(255,255,0);"/>
+                    </g>
+                    <g transform="matrix(0.580645,0,0,0.475556,985.065,1423.29)">
+                        <rect x="2977" y="4196" width="1" height="1" style="fill:rgb(255,255,0);"/>
+                    </g>
+                    <g transform="matrix(1.42217e-16,3.80444,-0.290323,2.91194e-17,3932.71,-7911.39)">
+                        <rect x="2977" y="4196" width="1" height="1" style="fill:rgb(255,0,255);"/>
+                    </g>
+                    <g transform="matrix(3.19355,0,0,0.475556,-6796.74,1423.29)">
+                        <rect x="2977" y="4196" width="1" height="1" style="fill:rgb(255,0,255);"/>
+                    </g>
+                </g>
+                <g transform="matrix(0.290323,0,0,0.475556,2208.65,3264.59)">
+                    <g transform="matrix(8,0,0,8,1706.27,328.932)">
+                    </g>
+                    <text x="1696.09px" y="328.932px" style="font-family:'Inter-Italic', 'Inter';font-style:italic;font-size:8px;fill:rgb(242,240,236);fill-opacity:0.19;">FX</text>
+                </g>
+                <g transform="matrix(2.03226,0,0,0.475556,-3349.16,1426.62)">
+                    <rect x="2977" y="4196" width="1" height="1" style="fill:rgb(57,57,57);"/>
+                </g>
+                <g transform="matrix(5.80645,0,0,0.475556,-14586.7,1421.39)">
+                    <rect x="2977" y="4196" width="1" height="1" style="fill:rgb(30,30,30);"/>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
