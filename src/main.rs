@@ -2,9 +2,10 @@ mod bounds;
 mod map_colors;
 mod parser;
 
-use std::{collections::HashMap, fs, path::PathBuf};
+use std::{collections::HashMap, fs, num::NonZeroU32, path::PathBuf};
 
 use bounds::Bounds;
+use bpaf::Bpaf;
 use parser::Color;
 use resvg::tiny_skia::{self, Pixmap};
 use thiserror::Error;
@@ -195,7 +196,60 @@ fn render_upscaled(
     Ok(pixmap)
 }
 
+#[derive(Debug, Clone, Bpaf)]
+#[bpaf(options)]
+pub struct Options {
+    #[bpaf(external(task), many)]
+    pub tasks: Vec<Task>,
+}
+
+#[derive(Debug, Clone, Bpaf)]
+#[bpaf(adjacent)]
+struct Task {
+    /// Scale to render the image
+    #[bpaf(short, long, fallback(1.0), argument("SCALE"))]
+    scale: f32,
+    #[bpaf(external(tile_setting), optional, group_help("Tiled upscaling"))]
+    tile_setting: Option<TileSetting>,
+    /// Output path to save the rendered image (should be PNG format)
+    #[bpaf(short, long, argument("OUTPUT"))]
+    output: PathBuf,
+    /// Input path of the SVG to be rendered
+    #[bpaf(positional("INPUT"))]
+    input: PathBuf,
+}
+
+#[derive(Debug, Clone, Bpaf)]
+enum TileSetting {
+    /// Image contains 3 equal-sized tiles placed horizontally, i.e. a horizontally-sliced button.
+    #[bpaf(short('h'), long("hb"))]
+    HorizontalButton,
+    /// Image contains 3 equal-sized tiles placed vertically, i.e. a vertically-sliced button.
+    #[bpaf(short('v'), long("vb"))]
+    VerticalButton,
+    Grid {
+        /// Divide the image into arbitrary number of tiles horizontally
+        #[bpaf(short('x'), long("tx"))]
+        tx: NonZeroU32,
+        /// Divide the image into arbitrary number of tiles vertically
+        #[bpaf(short('y'), long("ty"))]
+        ty: NonZeroU32,
+    },
+    HorizontalTiles {
+        /// Divide the image into arbitrary number of tiles horizontally
+        #[bpaf(short('x'), long("tx"))]
+        tx: NonZeroU32,
+    },
+    VerticalTiles {
+        /// Divide the image into arbitrary number of tiles vertically
+        #[bpaf(short('y'), long("ty"))]
+        ty: NonZeroU32,
+    },
+}
+
 fn main() {
+    let opt = options().run();
+
     let paths = fs::read_dir("svg").expect("failed to list paths in folder ./svg");
 
     let fontdb = {
