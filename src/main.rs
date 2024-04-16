@@ -211,10 +211,19 @@ fn main() {
 
         if let Some((yellow_bounds, pink_bounds)) = detect_reaper_bounds(&pixmap_1) {
             // there are bounds, preprocess then upscale
+            let upscale_mode = if path
+                .file_stem()
+                .is_some_and(|name| name.to_string_lossy() == "mcp_fxparm_empty")
+            {
+                UpscaleMode::VERTICAL_BUTTON
+            } else {
+                UpscaleMode::Normal
+            };
+
             let pixmap = render_upscaled(
                 &tree,
                 SCALE,
-                &UpscaleMode::Normal,
+                &upscale_mode,
                 Some(&pink_bounds),
                 Some(&yellow_bounds),
             )
