@@ -9,14 +9,14 @@ pub enum Options {
     /// Render SVG files and upscale them, while preserving REAPER's pink/yellow borders
     #[bpaf(command)]
     Render {
-        #[bpaf(external(task), some("at least one task must be specified"))]
-        tasks: Vec<Task>,
+        #[bpaf(external(render_task), some("at least one task must be specified"))]
+        tasks: Vec<RenderTask>,
     },
 }
 
 #[derive(Debug, Clone, Bpaf)]
 #[bpaf(adjacent)]
-pub struct Task {
+pub struct RenderTask {
     /// Input path of the SVG to be rendered
     #[bpaf(short, long, argument("SVG"))]
     pub input: PathBuf,

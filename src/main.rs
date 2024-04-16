@@ -6,7 +6,7 @@ mod render;
 
 use std::{cell::OnceCell, collections::HashMap, fs, path::PathBuf};
 
-use cli::{Options, Task};
+use cli::{Options, RenderTask};
 use parser::Color;
 
 use crate::{
@@ -16,7 +16,7 @@ use crate::{
     render::{render, render_upscaled, UpscaleMode},
 };
 
-fn cli_render(tasks: Vec<Task>) {
+fn cli_render(tasks: Vec<RenderTask>) {
     let fontdb = {
         let mut db = resvg::usvg::fontdb::Database::new();
         db.load_fonts_dir("fonts");
