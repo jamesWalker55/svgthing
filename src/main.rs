@@ -52,6 +52,7 @@ enum UpscaleError {
     InvalidOutputResolution(u32, u32),
 }
 
+/// Render a Tree normally at its normal scale
 fn render(tree: &resvg::usvg::Tree) -> Result<Pixmap, UpscaleError> {
     let (outer_width, outer_height) = {
         let size = tree.size();
@@ -76,6 +77,8 @@ fn render(tree: &resvg::usvg::Tree) -> Result<Pixmap, UpscaleError> {
     Ok(pixmap)
 }
 
+/// Render a Tree, upscaling it. This allows specifying 'tile size' to ensure that
+/// each inner tile is upscaled to an integer resolution, not a fractional resolution.
 fn render_upscaled(
     tree: &resvg::usvg::Tree,
     scale: f32,
