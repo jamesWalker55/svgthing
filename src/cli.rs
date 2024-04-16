@@ -78,3 +78,13 @@ pub enum TileSetting {
         ty: NonZeroU32,
     },
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn validate_cli() {
+        options().check_invariants(false);
+    }
+}

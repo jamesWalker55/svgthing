@@ -16,8 +16,6 @@ use crate::{
 };
 
 fn main() {
-    cli::options().check_invariants(false);
-
     let opt = cli::options().run();
 
     let fontdb = {
