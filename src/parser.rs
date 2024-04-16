@@ -2,18 +2,24 @@ use nom::{
     branch::alt,
     bytes::complete::{tag, take},
     character::complete::{char, one_of, space0, u8},
-    combinator::{cut, not, recognize},
+    combinator::{all_consuming, cut, not, recognize},
     multi::{many0, many1},
     sequence::{delimited, preceded, tuple},
-    IResult, Parser,
+    Finish, IResult, Parser,
 };
 
 type Input = str;
 
 type Result<'a, O = &'a Input> = IResult<&'a Input, O>;
 
-#[derive(PartialEq, Eq, Debug)]
-struct Color(u8, u8, u8);
+#[derive(PartialEq, Eq, Debug, Hash)]
+pub struct Color(pub u8, pub u8, pub u8);
+
+impl Color {
+    pub fn to_rgb_string(&self) -> String {
+        format!("rgb({}, {}, {})", self.0, self.1, self.2)
+    }
+}
 
 fn color_rgb_value(input: &Input) -> Result<u8> {
     delimited(space0, u8, space0)(input)
@@ -66,7 +72,7 @@ fn color_hex(input: &Input) -> Result<Color> {
 }
 
 #[derive(PartialEq, Eq, Debug)]
-enum TextElement<'a> {
+pub enum TextElement<'a> {
     Text(&'a Input),
     Color(Color),
 }
@@ -85,6 +91,12 @@ fn text_with_colors(input: &Input) -> Result<Vec<TextElement>> {
         non_color_text.map(|x| TextElement::Text(x)),
     )))
     .parse(input)
+}
+
+pub fn xml_text(input: &Input) -> std::result::Result<Vec<TextElement>, nom::error::Error<&Input>> {
+    all_consuming(text_with_colors)(input)
+        .finish()
+        .map(|(_rest, vec)| vec)
 }
 
 #[cfg(test)]
