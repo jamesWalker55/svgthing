@@ -94,6 +94,7 @@ fn color_hex(input: &Input) -> Result<Color> {
     .parse(input)
 }
 
+#[derive(PartialEq, Eq, Debug)]
 enum TextElement<'a> {
     Text(&'a Input),
     Color(Color),
@@ -107,14 +108,13 @@ fn non_color_text(input: &Input) -> Result {
     recognize(many1(preceded(not(color), take(1usize))))(input)
 }
 
-// fn text_with_colors(input: &Input) -> Result<Vec<TextElement>> {
-//     many0(alt((
-//         color_hex,
-//         color_numeric,
-//         take_while(|x|)
-//     )))
-//         .parse(input)
-// }
+fn text_with_colors(input: &Input) -> Result<Vec<TextElement>> {
+    many0(alt((
+        color.map(|x| TextElement::Color(x)),
+        non_color_text.map(|x| TextElement::Text(x)),
+    )))
+    .parse(input)
+}
 
 #[cfg(test)]
 mod tests {
@@ -174,9 +174,28 @@ mod tests {
     }
 
     #[test]
-    fn test_text() {
+    fn test_text_no_color() {
         assert_eq!(non_color_text("apple #000000").unwrap().1, "apple ");
         assert_eq!(non_color_text("apple rgb(1,2,3)").unwrap().1, "apple ");
         assert!(non_color_text("rgba(1, 2, 3,4)").is_err());
+    }
+
+    #[test]
+    fn test_text() {
+        assert_eq!(
+            text_with_colors("apple #000000").unwrap().1,
+            vec![
+                TextElement::Text("apple "),
+                TextElement::Color(Color::RGB(0, 0, 0))
+            ]
+        );
+        assert_eq!(
+            text_with_colors("apple rgb(1,2,3) apple").unwrap().1,
+            vec![
+                TextElement::Text("apple "),
+                TextElement::Color(Color::RGB(1, 2, 3)),
+                TextElement::Text(" apple")
+            ]
+        );
     }
 }
