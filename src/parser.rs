@@ -1,9 +1,9 @@
 use nom::{
     branch::alt,
-    bytes::complete::{tag, take, take_while},
+    bytes::complete::{tag, take},
     character::complete::{char, one_of, space0, u8},
     combinator::{cut, not, opt, recognize},
-    multi::{count, many0, many1},
+    multi::{many0, many1},
     sequence::{delimited, preceded, tuple},
     IResult, Parser,
 };
