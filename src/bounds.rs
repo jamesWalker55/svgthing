@@ -12,6 +12,27 @@ impl Bounds {
     pub fn is_empty(&self) -> bool {
         self.l == 0 && self.r == 0 && self.t == 0 && self.b == 0
     }
+
+    fn scale_value(value: u32, amount: f64) -> u32 {
+        if value == 0 {
+            return 0;
+        }
+
+        // prefer ceil over round
+        // rationale:
+        //   if a range of 5 is fixed size, then a range of 6 might be fixed size, while 4 will likely be too small
+        //   prefer larger values rather than rounding to nearest value
+        (value as f64 * amount).ceil().min(1.0) as u32
+    }
+
+    pub fn scale(&self, amount: f64) -> Self {
+        Self {
+            l: Self::scale_value(self.l, amount),
+            r: Self::scale_value(self.r, amount),
+            t: Self::scale_value(self.t, amount),
+            b: Self::scale_value(self.b, amount),
+        }
+    }
 }
 
 impl Default for Bounds {

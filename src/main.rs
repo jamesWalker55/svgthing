@@ -48,47 +48,71 @@ fn main() {
         // }
 
         // render to image
-        {
-            let mut fontdb = resvg::usvg::fontdb::Database::new();
-            fontdb.load_fonts_dir("fonts");
+        let mut fontdb = resvg::usvg::fontdb::Database::new();
+        fontdb.load_fonts_dir("fonts");
 
-            let tree =
-                resvg::usvg::Tree::from_str(&text, &resvg::usvg::Options::default(), &fontdb)
-                    .expect("failed to parse svg");
-            let (width, height) = {
-                let size = tree.size();
-                (size.width(), size.height())
+        let tree = resvg::usvg::Tree::from_str(&text, &resvg::usvg::Options::default(), &fontdb)
+            .expect("failed to parse svg");
+        let (outer_width, outer_height) = {
+            let size = tree.size();
+            let width = size.width();
+            let height = size.height();
+            if width.trunc() != width || height.trunc() != height {
+                panic!(
+                    "svg dimensions is fractional ({}, {}): {}",
+                    width,
+                    height,
+                    path.display()
+                );
+            }
+            (width as u32, height as u32)
+        };
+
+        // render normally first at scale 1
+        let pixmap_1 = {
+            let mut pixmap = resvg::tiny_skia::Pixmap::new(outer_width, outer_height).unwrap();
+
+            resvg::render(
+                &tree,
+                resvg::tiny_skia::Transform::identity(),
+                &mut pixmap.as_mut(),
+            );
+
+            pixmap
+        };
+
+        const SCALE: f64 = 1.5;
+
+        if let Some((yellow_bounds, pink_bounds)) = detect_reaper_bounds(&pixmap_1) {
+            // there are bounds, preprocess then upscale
+            let inner_width = outer_width - 2;
+            let inner_height = outer_height - 2;
+            let final_inner_width = ((inner_width as f64) * SCALE).ceil() as u32;
+            let final_inner_height = ((inner_height as f64) * SCALE).ceil() as u32;
+            let final_outer_width = final_inner_width + 2;
+            let final_outer_height = final_inner_height + 2;
+
+            let mut pixmap =
+                resvg::tiny_skia::Pixmap::new(final_outer_width, final_outer_height).unwrap();
+            let transform = {
+                let mut t = resvg::tiny_skia::Transform::identity();
+                t = t.post_translate(-1.0, -1.0);
+                t = t.post_scale(
+                    final_inner_width as f32 / inner_width as f32,
+                    final_inner_height as f32 / inner_height as f32,
+                );
+                t = t.post_translate(1.0, 1.0);
+                t
             };
-
-            const SCALE: u32 = 1;
-
-            let mut pixmap = resvg::tiny_skia::Pixmap::new(
-                (width.ceil() as u32) * SCALE,
-                (height.ceil() as u32) * SCALE,
-            )
-            .unwrap();
-            pixmap.fill(resvg::tiny_skia::Color::TRANSPARENT);
-
-            // no transformation
-            let transform = resvg::tiny_skia::Transform::from_scale(SCALE as f32, SCALE as f32);
-
-            // move everything to top-left by 1px
-            // let mut transform = resvg::tiny_skia::Transform::from_scale(SCALE as f32, SCALE as f32);
-            // transform = transform.pre_translate(-1.0, -1.0);
 
             resvg::render(&tree, transform, &mut pixmap.as_mut());
 
+            println!("{}", path.display());
             pixmap.save_png(&output_path).unwrap();
-
-            // check for bounds
-            if let Some((yellow_bounds, pink_bounds)) = detect_reaper_bounds(&pixmap) {
-                println!("{} {:?} {:?}", path.display(), yellow_bounds, pink_bounds);
-            } else {
-                println!("{}", path.display());
-            };
-        }
-
-        // std::io::stdout().flush().unwrap();
+        } else {
+            // no bounds, just upscale
+            // println!("{}", path.display());
+        };
     }
 
     println!("");
