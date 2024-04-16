@@ -1,6 +1,6 @@
 use std::iter;
 
-use resvg::tiny_skia::{self};
+use resvg::tiny_skia::{self, PixmapMut};
 
 #[derive(Debug)]
 pub struct Bounds {
@@ -92,6 +92,44 @@ impl Default for Bounds {
             b: Default::default(),
         }
     }
+}
+
+/// Erase a 1px border around the image
+pub fn erase_bounds(pixmap: &mut PixmapMut) {
+    let eraser_paint = {
+        let mut paint = tiny_skia::Paint::default();
+        paint.anti_alias = false;
+        paint.blend_mode = tiny_skia::BlendMode::Clear;
+        paint
+    };
+
+    let width = pixmap.width() as f32;
+    let height = pixmap.height() as f32;
+
+    pixmap.fill_rect(
+        tiny_skia::Rect::from_xywh(0.0, 0.0, width, 1.0).unwrap(),
+        &eraser_paint,
+        tiny_skia::Transform::identity(),
+        None,
+    );
+    pixmap.fill_rect(
+        tiny_skia::Rect::from_xywh(0.0, 0.0, 1.0, height).unwrap(),
+        &eraser_paint,
+        tiny_skia::Transform::identity(),
+        None,
+    );
+    pixmap.fill_rect(
+        tiny_skia::Rect::from_xywh(0.0, height - 1.0, width, 1.0).unwrap(),
+        &eraser_paint,
+        tiny_skia::Transform::identity(),
+        None,
+    );
+    pixmap.fill_rect(
+        tiny_skia::Rect::from_xywh(width - 1.0, 0.0, 1.0, height).unwrap(),
+        &eraser_paint,
+        tiny_skia::Transform::identity(),
+        None,
+    );
 }
 
 #[derive(Debug, PartialEq, Eq)]

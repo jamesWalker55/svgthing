@@ -158,48 +158,14 @@ fn render_upscaled(
 
     // clear existing bounds and redraw them
     if has_bounds {
-        let final_outer_width = final_outer_width as f32;
-        let final_outer_height = final_outer_height as f32;
-
+        // upscale the bounds
         let actual_scale = (final_inner_width as f32 / inner_width as f32)
             .max(final_inner_height as f32 / inner_height as f32);
 
         let pink_bounds = pink_bounds.unwrap().scale(actual_scale);
         let yellow_bounds = yellow_bounds.unwrap().scale(actual_scale);
 
-        let eraser_paint = {
-            let mut paint = tiny_skia::Paint::default();
-            paint.anti_alias = false;
-            paint.blend_mode = tiny_skia::BlendMode::Clear;
-            paint
-        };
-        pixmap.fill_rect(
-            tiny_skia::Rect::from_xywh(0.0, 0.0, final_outer_width, 1.0).unwrap(),
-            &eraser_paint,
-            tiny_skia::Transform::identity(),
-            None,
-        );
-        pixmap.fill_rect(
-            tiny_skia::Rect::from_xywh(0.0, 0.0, 1.0, final_outer_height).unwrap(),
-            &eraser_paint,
-            tiny_skia::Transform::identity(),
-            None,
-        );
-        pixmap.fill_rect(
-            tiny_skia::Rect::from_xywh(0.0, final_outer_height - 1.0, final_outer_width, 1.0)
-                .unwrap(),
-            &eraser_paint,
-            tiny_skia::Transform::identity(),
-            None,
-        );
-        pixmap.fill_rect(
-            tiny_skia::Rect::from_xywh(final_outer_width - 1.0, 0.0, 1.0, final_outer_height)
-                .unwrap(),
-            &eraser_paint,
-            tiny_skia::Transform::identity(),
-            None,
-        );
-
+        // redraw the bounds
         let pink_paint = {
             let mut paint = tiny_skia::Paint::default();
             paint.anti_alias = false;
@@ -217,6 +183,7 @@ fn render_upscaled(
 
         {
             let mut pixmap_mut = pixmap.as_mut();
+            bounds::erase_bounds(&mut pixmap_mut);
             pink_bounds.paint(&mut pixmap_mut, &pink_paint);
             yellow_bounds.paint(&mut pixmap_mut, &yellow_paint);
         }
