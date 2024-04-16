@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use nom::{
     branch::alt,
     bytes::complete::{tag, take},
@@ -18,6 +20,17 @@ pub struct Color(pub u8, pub u8, pub u8);
 impl Color {
     pub fn to_rgb_string(&self) -> String {
         format!("rgb({}, {}, {})", self.0, self.1, self.2)
+    }
+}
+
+impl FromStr for Color {
+    type Err = String;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        all_consuming(color)(&s)
+            .finish()
+            .map(|(i, o)| o)
+            .map_err(|x| x.to_string())
     }
 }
 
@@ -43,7 +56,7 @@ fn color_numeric(input: &Input) -> Result<Color> {
 
 fn color_hex(input: &Input) -> Result<Color> {
     preceded(
-        char('#'),
+        alt((tag("#"), tag("0x"))),
         tuple((
             recognize(tuple((
                 one_of("0123456789abcdefABCDEF"),

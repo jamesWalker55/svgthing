@@ -28,26 +28,51 @@ pub struct Options {
 #[derive(Debug, Clone, Bpaf)]
 #[bpaf(adjacent)]
 struct Task {
-    /// Scale to render the image
-    #[bpaf(short, long, fallback(1.0), argument("SCALE"))]
-    scale: f32,
+    /// Input path of the SVG to be rendered
+    #[bpaf(short, long, argument("SVG"))]
+    input: PathBuf,
+    /// Replace colors in the input SVG with new colors
+    #[bpaf(external(color_mapping), many)]
+    color_mappings: Vec<ColorMapping>,
     #[bpaf(external(tile_setting), optional, group_help("Tiled upscaling"))]
     tile_setting: Option<TileSetting>,
+    /// The output PNBs to render
+    #[bpaf(external(output), some("at least one output must be specified"))]
+    outputs: Vec<Output>,
+}
+
+#[derive(Debug, Clone, Bpaf)]
+#[bpaf(adjacent)]
+struct ColorMapping {
+    /// Map a color to a new color
+    #[bpaf(short, long)]
+    map: (),
+    /// Color to map from. If this color isn't found in the SVG, this will raise an error
+    #[bpaf(positional("FROM_COLOR"))]
+    old: Color,
+    /// The new color to use
+    #[bpaf(positional("TO_COLOR"))]
+    new: Color,
+}
+
+#[derive(Debug, Clone, Bpaf)]
+#[bpaf(adjacent)]
+struct Output {
     /// Output path to save the rendered image (should be PNG format)
     #[bpaf(short, long, argument("OUTPUT"))]
     output: PathBuf,
-    /// Input path of the SVG to be rendered
-    #[bpaf(positional("INPUT"))]
-    input: PathBuf,
+    /// Scale to render the image
+    #[bpaf(short, long, fallback(1.0), argument("SCALE"))]
+    scale: f32,
 }
 
 #[derive(Debug, Clone, Bpaf)]
 enum TileSetting {
     /// Image contains 3 equal-sized tiles placed horizontally, i.e. a horizontally-sliced button.
-    #[bpaf(short('h'), long("hb"))]
+    #[bpaf(long("hb"))]
     HorizontalButton,
     /// Image contains 3 equal-sized tiles placed vertically, i.e. a vertically-sliced button.
-    #[bpaf(short('v'), long("vb"))]
+    #[bpaf(long("vb"))]
     VerticalButton,
     Grid {
         /// Divide the image into arbitrary number of tiles horizontally
