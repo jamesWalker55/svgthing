@@ -5,9 +5,13 @@ use bpaf::Bpaf;
 
 #[derive(Debug, Clone, Bpaf)]
 #[bpaf(options)]
-pub struct Options {
-    #[bpaf(external(task), some("at least one task must be specified"))]
-    pub tasks: Vec<Task>,
+pub enum Options {
+    /// Render SVG files and upscale them, while preserving REAPER's pink/yellow borders
+    #[bpaf(command)]
+    Render {
+        #[bpaf(external(task), some("at least one task must be specified"))]
+        tasks: Vec<Task>,
+    },
 }
 
 #[derive(Debug, Clone, Bpaf)]

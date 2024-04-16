@@ -6,6 +6,7 @@ mod render;
 
 use std::{cell::OnceCell, collections::HashMap, fs, path::PathBuf};
 
+use cli::{Options, Task};
 use parser::Color;
 
 use crate::{
@@ -15,16 +16,14 @@ use crate::{
     render::{render, render_upscaled, UpscaleMode},
 };
 
-fn main() {
-    let opt = cli::options().run();
-
+fn cli_render(tasks: Vec<Task>) {
     let fontdb = {
         let mut db = resvg::usvg::fontdb::Database::new();
         db.load_fonts_dir("fonts");
         db
     };
 
-    for task in opt.tasks {
+    for task in tasks.iter() {
         // read the input SVG into text
         let path = task.input.as_path();
         let mut text = fs::read_to_string(&path)
@@ -101,5 +100,13 @@ fn main() {
 
             pixmap.save_png(&output_path).unwrap();
         }
+    }
+}
+
+fn main() {
+    let opt = cli::options().run();
+
+    match opt {
+        Options::Render { tasks } => cli_render(tasks),
     }
 }
