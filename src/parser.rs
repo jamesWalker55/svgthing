@@ -12,7 +12,7 @@ type Input = str;
 
 type Result<'a, O = &'a Input> = IResult<&'a Input, O>;
 
-#[derive(PartialEq, Eq, Debug, Hash)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone)]
 pub struct Color(pub u8, pub u8, pub u8);
 
 impl Color {
