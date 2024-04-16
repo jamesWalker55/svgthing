@@ -16,6 +16,43 @@ use crate::{
     render::{render, render_upscaled, UpscaleMode},
 };
 
+fn cli_colors(paths: Vec<PathBuf>, print_count: bool) {
+    let counts = paths
+        .iter()
+        .map(|path| {
+            // read the input SVG into text
+            let path = path.as_path();
+            let text = fs::read_to_string(&path)
+                .expect(format!("failed to read svg: {}", path.display()).as_str());
+
+            // parse colors in the SVG and map them
+            let original_colors = get_colors(&text)
+                .expect(format!("failed to parse svg: {}", path.display()).as_str());
+
+            original_colors
+        })
+        .fold(HashMap::<Color, u32>::new(), |mut acc, colors| {
+            for color in colors {
+                match acc.get(&color) {
+                    Some(count) => acc.insert(color, count + 1),
+                    None => acc.insert(color, 1),
+                };
+            }
+            acc
+        });
+
+    let mut counts: Vec<_> = counts.into_iter().collect();
+    counts.sort_by_key(|(_, count)| *count);
+
+    for (color, count) in counts.iter().rev() {
+        if print_count {
+            println!("{} {}", count, color.to_rgb_string());
+        } else {
+            println!("{}", color.to_rgb_string());
+        }
+    }
+}
+
 fn cli_render(tasks: Vec<RenderTask>) {
     let fontdb = {
         let mut db = resvg::usvg::fontdb::Database::new();
@@ -108,5 +145,6 @@ fn main() {
 
     match opt {
         Options::Render { tasks } => cli_render(tasks),
+        Options::Colors { paths, count } => cli_colors(paths, count),
     }
 }

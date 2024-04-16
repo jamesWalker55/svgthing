@@ -8,6 +8,13 @@ use bpaf::Bpaf;
 pub enum Options {
     /// Render SVG files and upscale them, while preserving REAPER's pink/yellow borders
     #[bpaf(command)]
+    Colors {
+        count: bool,
+        #[bpaf(positional("PATH"))]
+        paths: Vec<PathBuf>,
+    },
+    /// Render SVG files and upscale them, while preserving REAPER's pink/yellow borders
+    #[bpaf(command)]
     Render {
         #[bpaf(external(render_task), some("at least one task must be specified"))]
         tasks: Vec<RenderTask>,
