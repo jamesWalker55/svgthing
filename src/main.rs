@@ -16,7 +16,7 @@ use crate::{
 #[derive(Debug, Clone, Bpaf)]
 #[bpaf(options)]
 pub struct Options {
-    #[bpaf(external(task), many)]
+    #[bpaf(external(task), some("at least one task must be specified"))]
     pub tasks: Vec<Task>,
 }
 
