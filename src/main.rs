@@ -6,7 +6,7 @@ use std::{collections::HashMap, fs, path::PathBuf};
 
 use bounds::Bounds;
 use parser::Color;
-use resvg::tiny_skia::Pixmap;
+use resvg::tiny_skia::{self, Pixmap};
 use thiserror::Error;
 
 use crate::{
@@ -69,7 +69,7 @@ fn render(tree: &resvg::usvg::Tree) -> Result<Pixmap, UpscaleError> {
 
     resvg::render(
         &tree,
-        resvg::tiny_skia::Transform::identity(),
+        tiny_skia::Transform::identity(),
         &mut pixmap.as_mut(),
     );
 
@@ -141,20 +141,86 @@ fn render_upscaled(
         UpscaleError::InvalidOutputResolution(final_outer_width, final_outer_height),
     )?;
     let transform = if has_bounds {
-        resvg::tiny_skia::Transform::from_scale(
+        tiny_skia::Transform::from_scale(
             final_inner_width as f32 / inner_width as f32,
             final_inner_height as f32 / inner_height as f32,
         )
         .pre_translate(-1.0, -1.0)
         .post_translate(1.0, 1.0)
     } else {
-        resvg::tiny_skia::Transform::from_scale(
+        tiny_skia::Transform::from_scale(
             final_outer_width as f32 / outer_width as f32,
             final_outer_height as f32 / outer_height as f32,
         )
     };
 
     resvg::render(&tree, transform, &mut pixmap.as_mut());
+
+    // clear existing bounds and redraw them
+    if has_bounds {
+        let final_outer_width = final_outer_width as f32;
+        let final_outer_height = final_outer_height as f32;
+
+        let actual_scale = (final_inner_width as f32 / inner_width as f32)
+            .max(final_inner_height as f32 / inner_height as f32);
+
+        let pink_bounds = pink_bounds.unwrap().scale(actual_scale);
+        let yellow_bounds = yellow_bounds.unwrap().scale(actual_scale);
+
+        let eraser_paint = {
+            let mut paint = tiny_skia::Paint::default();
+            paint.anti_alias = false;
+            paint.blend_mode = tiny_skia::BlendMode::Clear;
+            paint
+        };
+        pixmap.fill_rect(
+            tiny_skia::Rect::from_xywh(0.0, 0.0, final_outer_width, 1.0).unwrap(),
+            &eraser_paint,
+            tiny_skia::Transform::identity(),
+            None,
+        );
+        pixmap.fill_rect(
+            tiny_skia::Rect::from_xywh(0.0, 0.0, 1.0, final_outer_height).unwrap(),
+            &eraser_paint,
+            tiny_skia::Transform::identity(),
+            None,
+        );
+        pixmap.fill_rect(
+            tiny_skia::Rect::from_xywh(0.0, final_outer_height - 1.0, final_outer_width, 1.0)
+                .unwrap(),
+            &eraser_paint,
+            tiny_skia::Transform::identity(),
+            None,
+        );
+        pixmap.fill_rect(
+            tiny_skia::Rect::from_xywh(final_outer_width - 1.0, 0.0, 1.0, final_outer_height)
+                .unwrap(),
+            &eraser_paint,
+            tiny_skia::Transform::identity(),
+            None,
+        );
+
+        let pink_paint = {
+            let mut paint = tiny_skia::Paint::default();
+            paint.anti_alias = false;
+            paint.blend_mode = tiny_skia::BlendMode::Source;
+            paint.set_color(tiny_skia::Color::from_rgba8(255, 0, 255, 255));
+            paint
+        };
+        let yellow_paint = {
+            let mut paint = tiny_skia::Paint::default();
+            paint.anti_alias = false;
+            paint.blend_mode = tiny_skia::BlendMode::Source;
+            paint.set_color(tiny_skia::Color::from_rgba8(255, 255, 0, 255));
+            paint
+        };
+
+        {
+            let mut pixmap_mut = pixmap.as_mut();
+            pink_bounds.paint(&mut pixmap_mut, &pink_paint);
+            yellow_bounds.paint(&mut pixmap_mut, &yellow_paint);
+        }
+    }
 
     Ok(pixmap)
 }

@@ -1,5 +1,7 @@
 use std::iter;
 
+use resvg::tiny_skia::{self};
+
 #[derive(Debug)]
 pub struct Bounds {
     pub l: u32,
@@ -13,7 +15,7 @@ impl Bounds {
         self.l == 0 && self.r == 0 && self.t == 0 && self.b == 0
     }
 
-    fn scale_value(value: u32, amount: f64) -> u32 {
+    fn scale_value(value: u32, amount: f32) -> u32 {
         if value == 0 {
             return 0;
         }
@@ -22,16 +24,62 @@ impl Bounds {
         // rationale:
         //   if a range of 5 is fixed size, then a range of 6 might be fixed size, while 4 will likely be too small
         //   prefer larger values rather than rounding to nearest value
-        (value as f64 * amount).ceil().min(1.0) as u32
+        (value as f32 * amount).ceil().max(1.0) as u32
     }
 
-    pub fn scale(&self, amount: f64) -> Self {
+    pub fn scale(&self, amount: f32) -> Self {
         Self {
             l: Self::scale_value(self.l, amount),
             r: Self::scale_value(self.r, amount),
             t: Self::scale_value(self.t, amount),
             b: Self::scale_value(self.b, amount),
         }
+    }
+
+    pub fn paint(&self, pixmap: &mut tiny_skia::PixmapMut, paint: &tiny_skia::Paint) {
+        if self.is_empty() {
+            return;
+        }
+
+        let img_width = pixmap.width() as f32;
+        let img_height = pixmap.height() as f32;
+
+        pixmap.fill_rect(
+            tiny_skia::Rect::from_xywh(0.0, 0.0, (self.l + 1) as f32, 1.0).unwrap(),
+            &paint,
+            tiny_skia::Transform::identity(),
+            None,
+        );
+        pixmap.fill_rect(
+            tiny_skia::Rect::from_xywh(0.0, 0.0, 1.0, (self.t + 1) as f32).unwrap(),
+            &paint,
+            tiny_skia::Transform::identity(),
+            None,
+        );
+        pixmap.fill_rect(
+            tiny_skia::Rect::from_xywh(
+                img_width - (self.r + 1) as f32,
+                img_height - 1.0,
+                (self.r + 1) as f32,
+                1.0,
+            )
+            .unwrap(),
+            &paint,
+            tiny_skia::Transform::identity(),
+            None,
+        );
+        pixmap.fill_rect(
+            tiny_skia::Rect::from_xywh(
+                img_width - 1.0,
+                img_height - (self.b + 1) as f32,
+                1.0,
+                (self.b + 1) as f32,
+            )
+            .unwrap(),
+            &paint,
+            tiny_skia::Transform::identity(),
+            None,
+        );
     }
 }
 
