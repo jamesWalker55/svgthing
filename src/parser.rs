@@ -141,11 +141,14 @@ mod tests {
     fn test_color_hex() {
         assert_eq!(color_hex("#000000").unwrap().1, Color(0, 0, 0));
         assert_eq!(color_hex("#112233").unwrap().1, Color(0x11, 0x22, 0x33));
+        assert_eq!(color_hex("0x000000").unwrap().1, Color(0, 0, 0));
+        assert_eq!(color_hex("0x112233").unwrap().1, Color(0x11, 0x22, 0x33));
     }
 
     #[test]
     fn test_text_no_color() {
         assert_eq!(non_color_text("apple #000000").unwrap().1, "apple ");
+        assert_eq!(non_color_text("apple 0x000000").unwrap().1, "apple ");
         assert_eq!(non_color_text("apple rgb(1,2,3)").unwrap().1, "apple ");
         assert!(non_color_text("rgb(1, 2, 3)").is_err());
     }
@@ -154,6 +157,13 @@ mod tests {
     fn test_text() {
         assert_eq!(
             text_with_colors("apple #000000").unwrap().1,
+            vec![
+                TextElement::Text("apple "),
+                TextElement::Color(Color(0, 0, 0))
+            ]
+        );
+        assert_eq!(
+            text_with_colors("apple 0x000000").unwrap().1,
             vec![
                 TextElement::Text("apple "),
                 TextElement::Color(Color(0, 0, 0))
