@@ -29,7 +29,7 @@ impl FromStr for Color {
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         all_consuming(color)(&s)
             .finish()
-            .map(|(i, o)| o)
+            .map(|(_, o)| o)
             .map_err(|x| x.to_string())
     }
 }
