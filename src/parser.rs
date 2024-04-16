@@ -1,9 +1,9 @@
 use nom::{
     branch::alt,
-    bytes::complete::tag,
+    bytes::complete::{tag, take, take_while},
     character::complete::{char, one_of, space0, u8},
-    combinator::{cut, opt, recognize},
-    multi::count,
+    combinator::{cut, not, opt, recognize},
+    multi::{count, many0, many1},
     sequence::{delimited, preceded, tuple},
     IResult, Parser,
 };
@@ -94,6 +94,28 @@ fn color_hex(input: &Input) -> Result<Color> {
     .parse(input)
 }
 
+enum TextElement<'a> {
+    Text(&'a Input),
+    Color(Color),
+}
+
+fn color(input: &Input) -> Result<Color> {
+    alt((color_hex, color_numeric))(input)
+}
+
+fn non_color_text(input: &Input) -> Result {
+    recognize(many1(preceded(not(color), take(1usize))))(input)
+}
+
+// fn text_with_colors(input: &Input) -> Result<Vec<TextElement>> {
+//     many0(alt((
+//         color_hex,
+//         color_numeric,
+//         take_while(|x|)
+//     )))
+//         .parse(input)
+// }
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -135,5 +157,26 @@ mod tests {
         );
         assert!(color_numeric("rgb(0, 256, 0)").is_err());
         assert!(color_numeric("rgb(-1, 0, 0)").is_err());
+    }
+
+    #[test]
+    fn test_color_hex() {
+        assert_eq!(color_hex("#000000").unwrap().1, Color::RGB(0, 0, 0));
+        assert_eq!(
+            color_hex("#112233").unwrap().1,
+            Color::RGB(0x11, 0x22, 0x33)
+        );
+        assert_eq!(color_hex("#00000000").unwrap().1, Color::RGBA(0, 0, 0, 0));
+        assert_eq!(
+            color_hex("#11223344").unwrap().1,
+            Color::RGBA(0x11, 0x22, 0x33, 0x44)
+        );
+    }
+
+    #[test]
+    fn test_text() {
+        assert_eq!(non_color_text("apple #000000").unwrap().1, "apple ");
+        assert_eq!(non_color_text("apple rgb(1,2,3)").unwrap().1, "apple ");
+        assert!(non_color_text("rgba(1, 2, 3,4)").is_err());
     }
 }
