@@ -16,6 +16,7 @@ pub enum Options {
     /// Render SVG files and upscale them, while preserving REAPER's pink/yellow borders
     #[bpaf(command)]
     Render {
+        fonts: Option<PathBuf>,
         #[bpaf(external(render_task), some("at least one task must be specified"))]
         tasks: Vec<RenderTask>,
     },

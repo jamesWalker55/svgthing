@@ -53,10 +53,12 @@ fn cli_colors(paths: Vec<PathBuf>, print_count: bool) {
     }
 }
 
-fn cli_render(tasks: Vec<RenderTask>) {
+fn cli_render(tasks: Vec<RenderTask>, fonts_dir: Option<PathBuf>) {
     let fontdb = {
         let mut db = resvg::usvg::fontdb::Database::new();
-        db.load_fonts_dir("fonts");
+        if let Some(path) = fonts_dir {
+            db.load_fonts_dir(path);
+        }
         db
     };
 
@@ -144,7 +146,7 @@ fn main() {
     let opt = cli::options().run();
 
     match opt {
-        Options::Render { tasks } => cli_render(tasks),
+        Options::Render { fonts, tasks } => cli_render(tasks, fonts),
         Options::Colors { paths, count } => cli_colors(paths, count),
     }
 }
