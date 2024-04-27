@@ -53,7 +53,7 @@ fn cli_colors(paths: Vec<PathBuf>, print_count: bool) {
     }
 }
 
-fn cli_render(tasks: Vec<RenderTask>, fonts_dir: Option<PathBuf>) {
+fn cli_render(tasks: Vec<RenderTask>, fonts_dir: Option<PathBuf>, strict: bool) {
     let fontdb = {
         let mut db = resvg::usvg::fontdb::Database::new();
         if let Some(path) = fonts_dir {
@@ -81,7 +81,7 @@ fn cli_render(tasks: Vec<RenderTask>, fonts_dir: Option<PathBuf>) {
                 }
                 color_map.insert(cm.old.clone(), cm.new.clone());
             }
-            text = map_colors(&text, &color_map, false)
+            text = map_colors(&text, &color_map, strict)
                 .expect(format!("failed to map colors: {}", path.display()).as_str());
         }
 
@@ -146,7 +146,11 @@ fn main() {
     let opt = cli::options().run();
 
     match opt {
-        Options::Render { fonts, tasks } => cli_render(tasks, fonts),
+        Options::Render {
+            fonts,
+            tasks,
+            strict,
+        } => cli_render(tasks, fonts, strict),
         Options::Colors { paths, count } => cli_colors(paths, count),
     }
 }

@@ -17,6 +17,7 @@ pub enum Options {
     #[bpaf(command)]
     Render {
         fonts: Option<PathBuf>,
+        strict: bool,
         #[bpaf(external(render_task), some("at least one task must be specified"))]
         tasks: Vec<RenderTask>,
     },
