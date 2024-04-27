@@ -21,6 +21,12 @@ impl Color {
     pub fn to_rgb_string(&self) -> String {
         format!("rgb({}, {}, {})", self.0, self.1, self.2)
     }
+
+    pub fn is_reaper_reserved(&self) -> bool {
+        let is_yellow = self.0 == 255 && self.1 == 255 && self.2 == 0;
+        let is_pink = self.0 == 255 && self.1 == 0 && self.2 == 255;
+        is_yellow || is_pink
+    }
 }
 
 impl FromStr for Color {

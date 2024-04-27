@@ -81,7 +81,7 @@ fn cli_render(tasks: Vec<RenderTask>, fonts_dir: Option<PathBuf>) {
                 }
                 color_map.insert(cm.old.clone(), cm.new.clone());
             }
-            text = map_colors(&text, &color_map)
+            text = map_colors(&text, &color_map, false)
                 .expect(format!("failed to map colors: {}", path.display()).as_str());
         }
 
