@@ -43,14 +43,19 @@ pub enum UpscaleError {
 
 /// Render a Tree normally at its normal scale
 pub fn render(tree: &resvg::usvg::Tree) -> Result<Pixmap, UpscaleError> {
-    let (outer_width, outer_height) = {
-        let size = tree.size();
-        let width = size.width();
-        let height = size.height();
+    let (outer_width, outer_height, x, y) = {
+        let viewbox = tree.view_box();
+        let x = viewbox.rect.x();
+        let y = viewbox.rect.y();
+        let width = viewbox.rect.width();
+        let height = viewbox.rect.height();
         if width.trunc() != width || height.trunc() != height {
-            panic!("svg dimensions is fractional ({} x {})", width, height);
+            panic!(
+                "svg dimensions is fractional ({} x {}) {:?}",
+                width, height, viewbox
+            );
         }
-        (width as u32, height as u32)
+        (width as u32, height as u32, x, y)
     };
 
     let mut pixmap = Pixmap::new(outer_width, outer_height).ok_or(
@@ -59,7 +64,7 @@ pub fn render(tree: &resvg::usvg::Tree) -> Result<Pixmap, UpscaleError> {
 
     resvg::render(
         &tree,
-        tiny_skia::Transform::identity(),
+        tiny_skia::Transform::from_translate(-x, -y),
         &mut pixmap.as_mut(),
     );
 
@@ -82,14 +87,16 @@ pub fn render_upscaled(
     let has_bounds = pink_bounds.is_some() || yellow_bounds.is_some();
 
     // calculate the target output size, given the upscale mode
-    let (outer_width, outer_height) = {
-        let size = tree.size();
-        let width = size.width();
-        let height = size.height();
+    let (outer_width, outer_height, x, y) = {
+        let viewbox = tree.view_box();
+        let x = viewbox.rect.x();
+        let y = viewbox.rect.y();
+        let width = viewbox.rect.width();
+        let height = viewbox.rect.height();
         if width.trunc() != width || height.trunc() != height {
             return Err(UpscaleError::FractionalInputResolution(width, height));
         }
-        (width as u32, height as u32)
+        (width as u32, height as u32, x, y)
     };
     let (inner_width, inner_height) = if has_bounds {
         (outer_width - 2, outer_height - 2)
@@ -133,14 +140,15 @@ pub fn render_upscaled(
         UpscaleError::InvalidOutputResolution(final_outer_width, final_outer_height),
     )?;
     let transform = if has_bounds {
-        tiny_skia::Transform::from_scale(
-            final_inner_width as f32 / inner_width as f32,
-            final_inner_height as f32 / inner_height as f32,
-        )
-        .pre_translate(-1.0, -1.0)
-        .post_translate(1.0, 1.0)
+        tiny_skia::Transform::from_translate(-x, -y)
+            .post_scale(
+                final_inner_width as f32 / inner_width as f32,
+                final_inner_height as f32 / inner_height as f32,
+            )
+            .pre_translate(-1.0, -1.0)
+            .post_translate(1.0, 1.0)
     } else {
-        tiny_skia::Transform::from_scale(
+        tiny_skia::Transform::from_translate(-x, -y).post_scale(
             final_outer_width as f32 / outer_width as f32,
             final_outer_height as f32 / outer_height as f32,
         )
