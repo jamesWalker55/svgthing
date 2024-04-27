@@ -88,6 +88,34 @@ fn color_hex(input: &Input) -> Result<Color> {
     .parse(input)
 }
 
+fn color_hex_short(input: &Input) -> Result<Color> {
+    delimited(
+        alt((tag("#"), tag("0x"))),
+        tuple((
+            recognize(one_of("0123456789abcdefABCDEF")),
+            recognize(one_of("0123456789abcdefABCDEF")),
+            recognize(one_of("0123456789abcdefABCDEF")),
+        )),
+        alt((
+            eof.map(|_| ()),
+            none_of("0123456789abcdefABCDEF").map(|_| ()),
+        )),
+    )
+    .map(|(r, g, b)| {
+        let r = u8::from_str_radix(r, 16)
+            .expect(format!("failed to convert {r} to number").as_str())
+            * 0x11;
+        let g = u8::from_str_radix(g, 16)
+            .expect(format!("failed to convert {g} to number").as_str())
+            * 0x11;
+        let b = u8::from_str_radix(b, 16)
+            .expect(format!("failed to convert {b} to number").as_str())
+            * 0x11;
+        Color(r, g, b)
+    })
+    .parse(input)
+}
+
 #[derive(PartialEq, Eq, Debug)]
 pub enum TextElement<'a> {
     Text(&'a Input),
@@ -95,7 +123,7 @@ pub enum TextElement<'a> {
 }
 
 fn color(input: &Input) -> Result<Color> {
-    alt((color_hex, color_numeric))(input)
+    alt((color_hex, color_hex_short, color_numeric))(input)
 }
 
 fn non_color_text(input: &Input) -> Result {
@@ -147,6 +175,14 @@ mod tests {
         assert_eq!(color_hex("#112233").unwrap().1, Color(0x11, 0x22, 0x33));
         assert_eq!(color_hex("0x000000").unwrap().1, Color(0, 0, 0));
         assert_eq!(color_hex("0x112233").unwrap().1, Color(0x11, 0x22, 0x33));
+    }
+
+    #[test]
+    fn test_color_hex_short() {
+        assert_eq!(color_hex_short("#000").unwrap().1, Color(0, 0, 0));
+        assert_eq!(color_hex_short("#123").unwrap().1, Color(0x11, 0x22, 0x33));
+        assert_eq!(color_hex_short("0x000").unwrap().1, Color(0, 0, 0));
+        assert_eq!(color_hex_short("0x123").unwrap().1, Color(0x11, 0x22, 0x33));
     }
 
     #[test]
