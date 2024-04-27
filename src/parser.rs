@@ -3,8 +3,8 @@ use std::str::FromStr;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take},
-    character::complete::{char, one_of, space0, u8},
-    combinator::{all_consuming, cut, not, recognize},
+    character::complete::{char, none_of, one_of, space0, u8},
+    combinator::{all_consuming, cut, eof, not, recognize},
     multi::{many0, many1},
     sequence::{delimited, preceded, tuple},
     Finish, IResult, Parser,
@@ -55,7 +55,7 @@ fn color_numeric(input: &Input) -> Result<Color> {
 }
 
 fn color_hex(input: &Input) -> Result<Color> {
-    preceded(
+    delimited(
         alt((tag("#"), tag("0x"))),
         tuple((
             recognize(tuple((
@@ -70,6 +70,10 @@ fn color_hex(input: &Input) -> Result<Color> {
                 one_of("0123456789abcdefABCDEF"),
                 one_of("0123456789abcdefABCDEF"),
             ))),
+        )),
+        alt((
+            eof.map(|_| ()),
+            none_of("0123456789abcdefABCDEF").map(|_| ()),
         )),
     )
     .map(|(r, g, b)| {
