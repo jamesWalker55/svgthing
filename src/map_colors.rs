@@ -27,24 +27,24 @@ pub fn map_colors(
         .iter()
         .map(|part| match part {
             parser::TextElement::Text(text) => Ok(Cow::from(*text)),
-            parser::TextElement::Color(color) => {
-                if color.is_reaper_reserved() {
-                    return Ok(color.to_rgb_string().into());
+            parser::TextElement::Color(old_color) => {
+                if old_color.is_reaper_reserved() {
+                    return Ok(old_color.to_rgb_string().into());
                 }
 
-                match color_map.get(color) {
+                match color_map.get(old_color) {
                     Some(new_color) => {
-                        unused_colors.remove(new_color);
+                        unused_colors.remove(old_color);
                         Ok(new_color.to_rgb_string().into())
                     }
                     None => {
                         if strict {
                             Err(format!(
-                                "failed to map colors {:?} - colors not found in svg",
+                                "failed to map colors {:?} - svg color not in map",
                                 unused_colors
                             ))
                         } else {
-                            Ok(color.to_rgb_string().into())
+                            Ok(old_color.to_rgb_string().into())
                         }
                     }
                 }
