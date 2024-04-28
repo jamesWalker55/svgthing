@@ -4,7 +4,7 @@ use nom::{
     branch::alt,
     bytes::complete::{tag, take},
     character::complete::{char, none_of, one_of, space0, u8},
-    combinator::{all_consuming, cut, eof, not, recognize},
+    combinator::{all_consuming, cut, eof, not, peek, recognize},
     multi::{many0, many1},
     sequence::{delimited, preceded, tuple},
     Finish, IResult, Parser,
@@ -77,10 +77,10 @@ fn color_hex(input: &Input) -> Result<Color> {
                 one_of("0123456789abcdefABCDEF"),
             ))),
         )),
-        alt((
+        peek(alt((
             eof.map(|_| ()),
             none_of("0123456789abcdefABCDEF").map(|_| ()),
-        )),
+        ))),
     )
     .map(|(r, g, b)| {
         let r =
@@ -102,10 +102,10 @@ fn color_hex_short(input: &Input) -> Result<Color> {
             recognize(one_of("0123456789abcdefABCDEF")),
             recognize(one_of("0123456789abcdefABCDEF")),
         )),
-        alt((
+        peek(alt((
             eof.map(|_| ()),
             none_of("0123456789abcdefABCDEF").map(|_| ()),
-        )),
+        ))),
     )
     .map(|(r, g, b)| {
         let r = u8::from_str_radix(r, 16)
