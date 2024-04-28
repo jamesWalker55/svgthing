@@ -4,7 +4,13 @@ mod map_colors;
 mod parser;
 mod render;
 
-use std::{cell::OnceCell, collections::HashMap, fs, path::PathBuf};
+use std::{
+    cell::OnceCell,
+    collections::HashMap,
+    fs,
+    io::{self, Read},
+    path::PathBuf,
+};
 
 use cli::{Options, RenderTask};
 use parser::Color;
@@ -146,6 +152,24 @@ fn main() {
             tasks,
             strict,
         } => cli_render(tasks, fonts, strict),
+        Options::RenderStdin { fonts, strict } => {
+            let input: String = {
+                let stdin = io::stdin();
+                let mut buf = Vec::new();
+                stdin
+                    .lock()
+                    .read_to_end(&mut buf)
+                    .expect("failed to read stdin");
+                String::from_utf8(buf).expect("input is invalid utf8")
+            };
+            let input_split = shell_words::split(input.as_str())
+                .expect("failed to parse stdin as UNIX arguments");
+            let tasks = cli::render_tasks()
+                .run_inner(input_split.as_slice())
+                .expect("failed to parse stdin as render tasks");
+
+            cli_render(tasks.tasks, fonts, strict);
+        }
         Options::Colors { paths, count } => cli_colors(paths, count),
     }
 }

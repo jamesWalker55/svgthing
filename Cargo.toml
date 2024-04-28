@@ -9,4 +9,5 @@ edition = "2021"
 bpaf = { version = "0.9", features = ["derive", "dull-color"] }
 nom = "7"
 resvg = "0.40.0"
+shell-words = "1.1.0"
 thiserror = "1.0"

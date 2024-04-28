@@ -6,7 +6,7 @@ use bpaf::Bpaf;
 #[derive(Debug, Clone, Bpaf)]
 #[bpaf(options)]
 pub enum Options {
-    /// Render SVG files and upscale them, while preserving REAPER's pink/yellow borders
+    /// Scan SVG files for colors and list them
     #[bpaf(command)]
     Colors {
         count: bool,
@@ -21,6 +21,19 @@ pub enum Options {
         #[bpaf(external(render_task), some("at least one task must be specified"))]
         tasks: Vec<RenderTask>,
     },
+    /// Same as the `render` command, but pass your tasks through stdin
+    #[bpaf(command)]
+    RenderStdin {
+        fonts: Option<PathBuf>,
+        strict: bool,
+    },
+}
+
+#[derive(Debug, Clone, Bpaf)]
+#[bpaf(options)]
+pub struct RenderTasks {
+    #[bpaf(external(render_task), some("at least one task must be specified"))]
+    pub tasks: Vec<RenderTask>,
 }
 
 #[derive(Debug, Clone, Bpaf)]
