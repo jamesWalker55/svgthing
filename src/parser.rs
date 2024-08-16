@@ -4,8 +4,9 @@ use nom::{
     branch::alt,
     bytes::complete::{tag, take},
     character::complete::{char, none_of, one_of, space0, u8},
-    combinator::{all_consuming, cut, eof, not, peek, recognize},
+    combinator::{all_consuming, cut, eof, not, opt, peek, recognize},
     multi::{many0, many1},
+    number::complete::float,
     sequence::{delimited, preceded, tuple},
     Finish, IResult, Parser,
 };
@@ -15,16 +16,88 @@ type Input = str;
 type Result<'a, O = &'a Input> = IResult<&'a Input, O>;
 
 #[derive(PartialEq, Eq, Debug, Hash, Clone)]
-pub struct Color(pub u8, pub u8, pub u8);
+pub struct RGB(pub u8, pub u8, pub u8);
+
+#[derive(PartialEq, Eq, Debug, Hash, Clone)]
+pub struct RGBA(pub u8, pub u8, pub u8, pub u8);
+
+#[derive(PartialEq, Eq, Debug, Hash, Clone)]
+pub enum Color {
+    RGB(RGB),
+    RGBA(RGBA),
+}
+
+impl ToString for Color {
+    fn to_string(&self) -> String {
+        match self {
+            Color::RGB(rgb) => format!("rgb({}, {}, {})", rgb.0, rgb.1, rgb.2),
+            Color::RGBA(rgba) => format!(
+                "rgb({}, {}, {});fill-opacity:{}",
+                rgba.0,
+                rgba.1,
+                rgba.2,
+                rgba.3 as f32 / 255.0
+            ),
+        }
+    }
+}
 
 impl Color {
-    pub fn to_rgb_string(&self) -> String {
-        format!("rgb({}, {}, {})", self.0, self.1, self.2)
+    pub fn r(&self) -> u8 {
+        match self {
+            Color::RGB(x) => x.0,
+            Color::RGBA(x) => x.0,
+        }
+    }
+
+    pub fn g(&self) -> u8 {
+        match self {
+            Color::RGB(x) => x.1,
+            Color::RGBA(x) => x.1,
+        }
+    }
+
+    pub fn b(&self) -> u8 {
+        match self {
+            Color::RGB(x) => x.2,
+            Color::RGBA(x) => x.2,
+        }
+    }
+
+    pub fn a(&self) -> Option<u8> {
+        match self {
+            Color::RGB(_) => None,
+            Color::RGBA(x) => Some(x.3),
+        }
+    }
+
+    pub fn with_a(&self, a: u8) -> Self {
+        match self {
+            Color::RGB(x) => Self::RGBA(RGBA(x.0, x.1, x.2, a)),
+            Color::RGBA(x) => Self::RGBA(RGBA(x.0, x.1, x.2, a)),
+        }
+    }
+
+    pub fn with_opacity(&self, opacity: f32) -> Self {
+        self.with_a((255.0 * opacity).round() as u8)
     }
 
     pub fn is_reaper_reserved(&self) -> bool {
-        let is_yellow = self.0 == 255 && self.1 == 255 && self.2 == 0;
-        let is_pink = self.0 == 255 && self.1 == 0 && self.2 == 255;
+        let (r, g, b);
+        match self {
+            Color::RGB(rgb) => {
+                r = rgb.0;
+                g = rgb.1;
+                b = rgb.2;
+            }
+            Color::RGBA(rgba) => {
+                r = rgba.0;
+                g = rgba.1;
+                b = rgba.2;
+            }
+        };
+        let is_yellow = r == 255 && g == 255 && b == 0;
+        let is_pink = r == 255 && g == 0 && b == 255;
         is_yellow || is_pink
     }
 }
@@ -44,7 +117,7 @@ fn color_rgb_value(input: &Input) -> Result<u8> {
     delimited(space0, u8, space0)(input)
 }
 
-fn color_numeric(input: &Input) -> Result<Color> {
+fn rgb_numeric(input: &Input) -> Result<RGB> {
     delimited(
         tag("rgb("),
         cut(tuple((
@@ -56,8 +129,32 @@ fn color_numeric(input: &Input) -> Result<Color> {
         ))),
         cut(char(')')),
     )
-    .map(|(r, _, g, _, b)| Color(r, g, b))
+    .map(|(r, _, g, _, b)| RGB(r, g, b))
     .parse(input)
+}
+
+fn rgba_numeric(input: &Input) -> Result<RGBA> {
+    delimited(
+        tag("rgba("),
+        cut(tuple((
+            color_rgb_value,
+            char(','),
+            color_rgb_value,
+            char(','),
+            color_rgb_value,
+            char(','),
+            color_rgb_value,
+        ))),
+        cut(char(')')),
+    )
+    .map(|(r, _, g, _, b, _, a)| RGBA(r, g, b, a))
+    .parse(input)
+}
+
+fn color_numeric(input: &Input) -> Result<Color> {
+    rgb_numeric(input)
+        .map(|(i, x)| (i, Color::RGB(x)))
+        .or_else(|_| rgba_numeric(input).map(|(i, x)| (i, Color::RGBA(x))))
 }
 
 fn color_hex(input: &Input) -> Result<Color> {
@@ -76,25 +173,36 @@ fn color_hex(input: &Input) -> Result<Color> {
                 one_of("0123456789abcdefABCDEF"),
                 one_of("0123456789abcdefABCDEF"),
             ))),
+            opt(recognize(tuple((
+                one_of("0123456789abcdefABCDEF"),
+                one_of("0123456789abcdefABCDEF"),
+            )))),
         )),
         peek(alt((
             eof.map(|_| ()),
             none_of("0123456789abcdefABCDEF").map(|_| ()),
         ))),
     )
-    .map(|(r, g, b)| {
+    .map(|(r, g, b, a)| {
         let r =
             u8::from_str_radix(r, 16).expect(format!("failed to convert {r} to number").as_str());
         let g =
             u8::from_str_radix(g, 16).expect(format!("failed to convert {g} to number").as_str());
         let b =
             u8::from_str_radix(b, 16).expect(format!("failed to convert {b} to number").as_str());
-        Color(r, g, b)
+        match a {
+            Some(a) => {
+                let a = u8::from_str_radix(a, 16)
+                    .expect(format!("failed to convert {a} to number").as_str());
+                Color::RGBA(RGBA(r, g, b, a))
+            }
+            None => Color::RGB(RGB(r, g, b)),
+        }
     })
     .parse(input)
 }
 
-fn color_hex_short(input: &Input) -> Result<Color> {
+fn rgb_hex_short(input: &Input) -> Result<RGB> {
     delimited(
         alt((tag("#"), tag("0x"))),
         tuple((
@@ -117,19 +225,31 @@ fn color_hex_short(input: &Input) -> Result<Color> {
         let b = u8::from_str_radix(b, 16)
             .expect(format!("failed to convert {b} to number").as_str())
             * 0x11;
-        Color(r, g, b)
+        RGB(r, g, b)
     })
     .parse(input)
 }
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Debug)]
 pub enum TextElement<'a> {
     Text(&'a Input),
     Color(Color),
 }
 
+fn fill_opacity(input: &Input) -> Result<f32> {
+    preceded(tag(";fill-opacity:"), float)(input)
+}
+
 fn color(input: &Input) -> Result<Color> {
-    alt((color_hex, color_hex_short, color_numeric))(input)
+    alt((
+        color_hex,
+        rgb_hex_short.map(|x| Color::RGB(x)),
+        color_numeric,
+    ))(input)
+    .map(|(input, color)| match fill_opacity(input) {
+        Ok((input, opacity)) => (input, color.with_opacity(opacity)),
+        Err(_) => (input, color),
+    })
 }
 
 fn non_color_text(input: &Input) -> Result {
@@ -157,38 +277,41 @@ mod tests {
     #[test]
     fn test_color_numeric() {
         // spacing
-        assert_eq!(color_numeric("rgb(1,2,3)").unwrap().1, Color(1, 2, 3));
-        assert_eq!(color_numeric("rgb(1, 2, 3)").unwrap().1, Color(1, 2, 3));
+        assert_eq!(rgb_numeric("rgb(1,2,3)").unwrap().1, RGB(1, 2, 3));
+        assert_eq!(rgb_numeric("rgb(1, 2, 3)").unwrap().1, RGB(1, 2, 3));
         assert_eq!(
-            color_numeric("rgb(  1  ,  2  ,  3  )").unwrap().1,
-            Color(1, 2, 3)
+            rgb_numeric("rgb(  1  ,  2  ,  3  )").unwrap().1,
+            RGB(1, 2, 3)
         );
-        assert!(color_numeric("rgb(  1  ,  2  ,  3  ,)").is_err());
-        assert!(color_numeric("rgb (1, 2, 3)").is_err());
+        assert!(rgb_numeric("rgb(  1  ,  2  ,  3  ,)").is_err());
+        assert!(rgb_numeric("rgb (1, 2, 3)").is_err());
 
         // valid numbers
-        assert_eq!(
-            color_numeric("rgb(0, 100, 255)").unwrap().1,
-            Color(0, 100, 255)
-        );
-        assert!(color_numeric("rgb(0, 256, 0)").is_err());
-        assert!(color_numeric("rgb(-1, 0, 0)").is_err());
+        assert_eq!(rgb_numeric("rgb(0, 100, 255)").unwrap().1, RGB(0, 100, 255));
+        assert!(rgb_numeric("rgb(0, 256, 0)").is_err());
+        assert!(rgb_numeric("rgb(-1, 0, 0)").is_err());
     }
 
     #[test]
     fn test_color_hex() {
-        assert_eq!(color_hex("#000000").unwrap().1, Color(0, 0, 0));
-        assert_eq!(color_hex("#112233").unwrap().1, Color(0x11, 0x22, 0x33));
-        assert_eq!(color_hex("0x000000").unwrap().1, Color(0, 0, 0));
-        assert_eq!(color_hex("0x112233").unwrap().1, Color(0x11, 0x22, 0x33));
+        assert_eq!(color_hex("#000000").unwrap().1, Color::RGB(RGB(0, 0, 0)));
+        assert_eq!(
+            color_hex("#112233").unwrap().1,
+            Color::RGB(RGB(0x11, 0x22, 0x33))
+        );
+        assert_eq!(color_hex("0x000000").unwrap().1, Color::RGB(RGB(0, 0, 0)));
+        assert_eq!(
+            color_hex("0x112233").unwrap().1,
+            Color::RGB(RGB(0x11, 0x22, 0x33))
+        );
     }
 
     #[test]
     fn test_color_hex_short() {
-        assert_eq!(color_hex_short("#000").unwrap().1, Color(0, 0, 0));
-        assert_eq!(color_hex_short("#123").unwrap().1, Color(0x11, 0x22, 0x33));
-        assert_eq!(color_hex_short("0x000").unwrap().1, Color(0, 0, 0));
-        assert_eq!(color_hex_short("0x123").unwrap().1, Color(0x11, 0x22, 0x33));
+        assert_eq!(rgb_hex_short("#000").unwrap().1, RGB(0, 0, 0));
+        assert_eq!(rgb_hex_short("#123").unwrap().1, RGB(0x11, 0x22, 0x33));
+        assert_eq!(rgb_hex_short("0x000").unwrap().1, RGB(0, 0, 0));
+        assert_eq!(rgb_hex_short("0x123").unwrap().1, RGB(0x11, 0x22, 0x33));
     }
 
     #[test]
@@ -205,21 +328,21 @@ mod tests {
             text_with_colors("apple #000000").unwrap().1,
             vec![
                 TextElement::Text("apple "),
-                TextElement::Color(Color(0, 0, 0))
+                TextElement::Color(Color::RGB(RGB(0, 0, 0)))
             ]
         );
         assert_eq!(
             text_with_colors("apple 0x000000").unwrap().1,
             vec![
                 TextElement::Text("apple "),
-                TextElement::Color(Color(0, 0, 0))
+                TextElement::Color(Color::RGB(RGB(0, 0, 0)))
             ]
         );
         assert_eq!(
             text_with_colors("apple rgb(1,2,3) apple").unwrap().1,
             vec![
                 TextElement::Text("apple "),
-                TextElement::Color(Color(1, 2, 3)),
+                TextElement::Color(Color::RGB(RGB(1, 2, 3))),
                 TextElement::Text(" apple")
             ]
         );

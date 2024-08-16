@@ -52,9 +52,9 @@ fn cli_colors(paths: Vec<PathBuf>, print_count: bool) {
 
     for (color, count) in counts.iter().rev() {
         if print_count {
-            println!("{} {}", count, color.to_rgb_string());
+            println!("{} {}", count, color.to_string());
         } else {
-            println!("{}", color.to_rgb_string());
+            println!("{}", color.to_string());
         }
     }
 }

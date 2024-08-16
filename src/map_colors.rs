@@ -29,13 +29,13 @@ pub fn map_colors(
             parser::TextElement::Text(text) => Ok(Cow::from(*text)),
             parser::TextElement::Color(old_color) => {
                 if old_color.is_reaper_reserved() {
-                    return Ok(old_color.to_rgb_string().into());
+                    return Ok(old_color.to_string().into());
                 }
 
                 match color_map.get(old_color) {
                     Some(new_color) => {
                         unused_colors.remove(old_color);
-                        Ok(new_color.to_rgb_string().into())
+                        Ok(new_color.to_string().into())
                     }
                     None => {
                         if strict {
@@ -44,7 +44,7 @@ pub fn map_colors(
                                 old_color
                             ))
                         } else {
-                            Ok(old_color.to_rgb_string().into())
+                            Ok(old_color.to_string().into())
                         }
                     }
                 }
