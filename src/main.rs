@@ -75,7 +75,7 @@ fn cli_render(tasks: Vec<RenderTask>, fonts_dir: Option<PathBuf>, strict: bool) 
             .expect(format!("failed to read svg: {}", path.display()).as_str());
 
         // parse colors in the SVG and map them
-        if task.color_mappings.len() != 0 {
+        {
             let mut color_map: HashMap<Color, Color> = HashMap::new();
 
             for cm in &task.color_mappings {
