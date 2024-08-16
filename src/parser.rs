@@ -77,6 +77,10 @@ impl Color {
     }
 
     pub fn is_reaper_reserved(&self) -> bool {
+        if self.a().unwrap_or(255) != 255 {
+            return false;
+        }
+
         let r = self.r();
         let g = self.g();
         let b = self.b();
