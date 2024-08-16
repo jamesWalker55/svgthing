@@ -87,6 +87,10 @@ fn cli_render(tasks: Vec<RenderTask>, fonts_dir: Option<PathBuf>, strict: bool) 
         }
 
         let tree = resvg::usvg::Tree::from_str(&text, &resvg::usvg::Options::default(), &fontdb)
+            .or_else(|x| {
+                fs::write("error.svg", text).unwrap();
+                Err(x)
+            })
             .expect("failed to parse svg");
 
         let scale_1_pixmap = render(&tree).unwrap();
