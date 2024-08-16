@@ -16,27 +16,21 @@ type Input = str;
 type Result<'a, O = &'a Input> = IResult<&'a Input, O>;
 
 #[derive(PartialEq, Eq, Debug, Hash, Clone)]
-pub struct RGB(pub u8, pub u8, pub u8);
-
-#[derive(PartialEq, Eq, Debug, Hash, Clone)]
-pub struct RGBA(pub u8, pub u8, pub u8, pub u8);
-
-#[derive(PartialEq, Eq, Debug, Hash, Clone)]
 pub enum Color {
-    RGB(RGB),
-    RGBA(RGBA),
+    RGB(u8, u8, u8),
+    RGBA(u8, u8, u8, u8),
 }
 
 impl ToString for Color {
     fn to_string(&self) -> String {
         match self {
-            Color::RGB(rgb) => format!("rgb({}, {}, {})", rgb.0, rgb.1, rgb.2),
-            Color::RGBA(rgba) => format!(
+            Color::RGB(r, g, b) => format!("rgb({}, {}, {})", r, g, b),
+            Color::RGBA(r, g, b, a) => format!(
                 "rgb({}, {}, {});fill-opacity:{}",
-                rgba.0,
-                rgba.1,
-                rgba.2,
-                rgba.3 as f32 / 255.0
+                r,
+                g,
+                b,
+                *a as f32 / 255.0
             ),
         }
     }
@@ -45,36 +39,36 @@ impl ToString for Color {
 impl Color {
     pub fn r(&self) -> u8 {
         match self {
-            Color::RGB(x) => x.0,
-            Color::RGBA(x) => x.0,
+            Color::RGB(r, g, b) => *r,
+            Color::RGBA(r, g, b, a) => *r,
         }
     }
 
     pub fn g(&self) -> u8 {
         match self {
-            Color::RGB(x) => x.1,
-            Color::RGBA(x) => x.1,
+            Color::RGB(r, g, b) => *g,
+            Color::RGBA(r, g, b, a) => *g,
         }
     }
 
     pub fn b(&self) -> u8 {
         match self {
-            Color::RGB(x) => x.2,
-            Color::RGBA(x) => x.2,
+            Color::RGB(r, g, b) => *b,
+            Color::RGBA(r, g, b, a) => *b,
         }
     }
 
     pub fn a(&self) -> Option<u8> {
         match self {
-            Color::RGB(_) => None,
-            Color::RGBA(x) => Some(x.3),
+            Color::RGB(r, g, b) => None,
+            Color::RGBA(r, g, b, a) => Some(*a),
         }
     }
 
     pub fn with_a(&self, a: u8) -> Self {
         match self {
-            Color::RGB(x) => Self::RGBA(RGBA(x.0, x.1, x.2, a)),
-            Color::RGBA(x) => Self::RGBA(RGBA(x.0, x.1, x.2, a)),
+            Color::RGB(r, g, b) => Self::RGBA(*r, *g, *b, a),
+            Color::RGBA(r, g, b, a) => Self::RGBA(*r, *g, *b, *a),
         }
     }
 
@@ -83,19 +77,9 @@ impl Color {
     }
 
     pub fn is_reaper_reserved(&self) -> bool {
-        let (r, g, b);
-        match self {
-            Color::RGB(rgb) => {
-                r = rgb.0;
-                g = rgb.1;
-                b = rgb.2;
-            }
-            Color::RGBA(rgba) => {
-                r = rgba.0;
-                g = rgba.1;
-                b = rgba.2;
-            }
-        };
+        let r = self.r();
+        let g = self.g();
+        let b = self.b();
         let is_yellow = r == 255 && g == 255 && b == 0;
         let is_pink = r == 255 && g == 0 && b == 255;
         is_yellow || is_pink
@@ -117,7 +101,7 @@ fn color_rgb_value(input: &Input) -> Result<u8> {
     delimited(space0, u8, space0)(input)
 }
 
-fn rgb_numeric(input: &Input) -> Result<RGB> {
+fn rgb_numeric(input: &Input) -> Result<Color> {
     delimited(
         tag("rgb("),
         cut(tuple((
@@ -129,11 +113,11 @@ fn rgb_numeric(input: &Input) -> Result<RGB> {
         ))),
         cut(char(')')),
     )
-    .map(|(r, _, g, _, b)| RGB(r, g, b))
+    .map(|(r, _, g, _, b)| Color::RGB(r, g, b))
     .parse(input)
 }
 
-fn rgba_numeric(input: &Input) -> Result<RGBA> {
+fn rgba_numeric(input: &Input) -> Result<Color> {
     delimited(
         tag("rgba("),
         cut(tuple((
@@ -147,14 +131,12 @@ fn rgba_numeric(input: &Input) -> Result<RGBA> {
         ))),
         cut(char(')')),
     )
-    .map(|(r, _, g, _, b, _, a)| RGBA(r, g, b, a))
+    .map(|(r, _, g, _, b, _, a)| Color::RGBA(r, g, b, a))
     .parse(input)
 }
 
 fn color_numeric(input: &Input) -> Result<Color> {
-    rgb_numeric(input)
-        .map(|(i, x)| (i, Color::RGB(x)))
-        .or_else(|_| rgba_numeric(input).map(|(i, x)| (i, Color::RGBA(x))))
+    alt((rgb_numeric, rgba_numeric))(input)
 }
 
 fn color_hex(input: &Input) -> Result<Color> {
@@ -194,15 +176,15 @@ fn color_hex(input: &Input) -> Result<Color> {
             Some(a) => {
                 let a = u8::from_str_radix(a, 16)
                     .expect(format!("failed to convert {a} to number").as_str());
-                Color::RGBA(RGBA(r, g, b, a))
+                Color::RGBA(r, g, b, a)
             }
-            None => Color::RGB(RGB(r, g, b)),
+            None => Color::RGB(r, g, b),
         }
     })
     .parse(input)
 }
 
-fn rgb_hex_short(input: &Input) -> Result<RGB> {
+fn rgb_hex_short(input: &Input) -> Result<Color> {
     delimited(
         alt((tag("#"), tag("0x"))),
         tuple((
@@ -225,9 +207,13 @@ fn rgb_hex_short(input: &Input) -> Result<RGB> {
         let b = u8::from_str_radix(b, 16)
             .expect(format!("failed to convert {b} to number").as_str())
             * 0x11;
-        RGB(r, g, b)
+        Color::RGB(r, g, b)
     })
     .parse(input)
+}
+
+fn color(input: &Input) -> Result<Color> {
+    alt((color_hex, rgb_hex_short, color_numeric))(input)
 }
 
 #[derive(PartialEq, Debug)]
@@ -240,25 +226,20 @@ fn fill_opacity(input: &Input) -> Result<f32> {
     preceded(tag(";fill-opacity:"), float)(input)
 }
 
-fn color(input: &Input) -> Result<Color> {
-    alt((
-        color_hex,
-        rgb_hex_short.map(|x| Color::RGB(x)),
-        color_numeric,
-    ))(input)
-    .map(|(input, color)| match fill_opacity(input) {
+fn color_with_fill_opacity(input: &Input) -> Result<Color> {
+    color(input).map(|(input, color)| match fill_opacity(input) {
         Ok((input, opacity)) => (input, color.with_opacity(opacity)),
         Err(_) => (input, color),
     })
 }
 
 fn non_color_text(input: &Input) -> Result {
-    recognize(many1(preceded(not(color), take(1usize))))(input)
+    recognize(many1(preceded(not(color_with_fill_opacity), take(1usize))))(input)
 }
 
 fn text_with_colors(input: &Input) -> Result<Vec<TextElement>> {
     many0(alt((
-        color.map(|x| TextElement::Color(x)),
+        color_with_fill_opacity.map(|x| TextElement::Color(x)),
         non_color_text.map(|x| TextElement::Text(x)),
     )))
     .parse(input)
@@ -277,41 +258,50 @@ mod tests {
     #[test]
     fn test_color_numeric() {
         // spacing
-        assert_eq!(rgb_numeric("rgb(1,2,3)").unwrap().1, RGB(1, 2, 3));
-        assert_eq!(rgb_numeric("rgb(1, 2, 3)").unwrap().1, RGB(1, 2, 3));
+        assert_eq!(rgb_numeric("rgb(1,2,3)").unwrap().1, Color::RGB(1, 2, 3));
+        assert_eq!(rgb_numeric("rgb(1, 2, 3)").unwrap().1, Color::RGB(1, 2, 3));
         assert_eq!(
             rgb_numeric("rgb(  1  ,  2  ,  3  )").unwrap().1,
-            RGB(1, 2, 3)
+            Color::RGB(1, 2, 3)
         );
         assert!(rgb_numeric("rgb(  1  ,  2  ,  3  ,)").is_err());
         assert!(rgb_numeric("rgb (1, 2, 3)").is_err());
 
         // valid numbers
-        assert_eq!(rgb_numeric("rgb(0, 100, 255)").unwrap().1, RGB(0, 100, 255));
+        assert_eq!(
+            rgb_numeric("rgb(0, 100, 255)").unwrap().1,
+            Color::RGB(0, 100, 255)
+        );
         assert!(rgb_numeric("rgb(0, 256, 0)").is_err());
         assert!(rgb_numeric("rgb(-1, 0, 0)").is_err());
     }
 
     #[test]
     fn test_color_hex() {
-        assert_eq!(color_hex("#000000").unwrap().1, Color::RGB(RGB(0, 0, 0)));
+        assert_eq!(color_hex("#000000").unwrap().1, Color::RGB(0, 0, 0));
         assert_eq!(
             color_hex("#112233").unwrap().1,
-            Color::RGB(RGB(0x11, 0x22, 0x33))
+            Color::RGB(0x11, 0x22, 0x33)
         );
-        assert_eq!(color_hex("0x000000").unwrap().1, Color::RGB(RGB(0, 0, 0)));
+        assert_eq!(color_hex("0x000000").unwrap().1, Color::RGB(0, 0, 0));
         assert_eq!(
             color_hex("0x112233").unwrap().1,
-            Color::RGB(RGB(0x11, 0x22, 0x33))
+            Color::RGB(0x11, 0x22, 0x33)
         );
     }
 
     #[test]
     fn test_color_hex_short() {
-        assert_eq!(rgb_hex_short("#000").unwrap().1, RGB(0, 0, 0));
-        assert_eq!(rgb_hex_short("#123").unwrap().1, RGB(0x11, 0x22, 0x33));
-        assert_eq!(rgb_hex_short("0x000").unwrap().1, RGB(0, 0, 0));
-        assert_eq!(rgb_hex_short("0x123").unwrap().1, RGB(0x11, 0x22, 0x33));
+        assert_eq!(rgb_hex_short("#000").unwrap().1, Color::RGB(0, 0, 0));
+        assert_eq!(
+            rgb_hex_short("#123").unwrap().1,
+            Color::RGB(0x11, 0x22, 0x33)
+        );
+        assert_eq!(rgb_hex_short("0x000").unwrap().1, Color::RGB(0, 0, 0));
+        assert_eq!(
+            rgb_hex_short("0x123").unwrap().1,
+            Color::RGB(0x11, 0x22, 0x33)
+        );
     }
 
     #[test]
@@ -328,21 +318,21 @@ mod tests {
             text_with_colors("apple #000000").unwrap().1,
             vec![
                 TextElement::Text("apple "),
-                TextElement::Color(Color::RGB(RGB(0, 0, 0)))
+                TextElement::Color(Color::RGB(0, 0, 0))
             ]
         );
         assert_eq!(
             text_with_colors("apple 0x000000").unwrap().1,
             vec![
                 TextElement::Text("apple "),
-                TextElement::Color(Color::RGB(RGB(0, 0, 0)))
+                TextElement::Color(Color::RGB(0, 0, 0))
             ]
         );
         assert_eq!(
             text_with_colors("apple rgb(1,2,3) apple").unwrap().1,
             vec![
                 TextElement::Text("apple "),
-                TextElement::Color(Color::RGB(RGB(1, 2, 3))),
+                TextElement::Color(Color::RGB(1, 2, 3)),
                 TextElement::Text(" apple")
             ]
         );
