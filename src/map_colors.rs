@@ -41,7 +41,7 @@ pub fn map_colors(
                         if strict {
                             Err(format!(
                                 "failed to map colors {:?} - svg color not in map",
-                                unused_colors
+                                old_color
                             ))
                         } else {
                             Ok(old_color.to_rgb_string().into())
