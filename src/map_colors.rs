@@ -51,11 +51,12 @@ pub fn map_colors(
             }
         })
         .collect();
+    let result = result?;
     if unused_colors.len() != 0 {
         return Err(format!(
             "failed to map colors {:?} - colors not found in svg",
             unused_colors
         ));
     }
-    result
+    Ok(result)
 }
