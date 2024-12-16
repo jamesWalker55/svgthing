@@ -8,9 +8,9 @@ use crate::{
     RenderOptions,
 };
 
-pub fn get_colors(xml: &str) -> Result<HashSet<Color>, String> {
+pub fn get_colors(xml: &str, include_alpha: bool) -> Result<HashSet<Color>, String> {
     let mut result = HashSet::new();
-    for part in parser::xml_text(xml.into()).map_err(|x| format!("{}", x))? {
+    for part in parser::xml_text(xml.into(), include_alpha).map_err(|x| format!("{}", x))? {
         let parser::TextElement::Color(color) = part else {
             continue;
         };
@@ -25,7 +25,7 @@ pub fn map_colors(
     opt: &RenderOptions,
 ) -> Result<String, String> {
     let mut unused_colors: HashSet<Color> = color_map.keys().cloned().collect();
-    let result: Result<String, String> = parser::xml_text(xml.into())
+    let result: Result<String, String> = parser::xml_text(xml.into(), opt.include_alpha)
         .map_err(|x| format!("{}", x))?
         .iter()
         .map(|part| match part {

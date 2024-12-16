@@ -22,7 +22,7 @@ use crate::{
     render::{render, render_upscaled, UpscaleMode},
 };
 
-fn cli_colors(paths: Vec<PathBuf>, print_count: bool) {
+fn cli_colors(paths: Vec<PathBuf>, print_count: bool, include_alpha: bool) {
     let counts = paths
         .iter()
         .map(|path| {
@@ -32,7 +32,7 @@ fn cli_colors(paths: Vec<PathBuf>, print_count: bool) {
                 .expect(format!("failed to read svg: {}", path.display()).as_str());
 
             // parse colors in the SVG and map them
-            let original_colors = get_colors(&text)
+            let original_colors = get_colors(&text, include_alpha)
                 .expect(format!("failed to parse svg: {}", path.display()).as_str());
 
             original_colors
@@ -62,6 +62,7 @@ fn cli_colors(paths: Vec<PathBuf>, print_count: bool) {
 pub(crate) struct RenderOptions {
     pub(crate) all_input_colors: bool,
     pub(crate) all_svg_colors: bool,
+    pub(crate) include_alpha: bool,
 }
 
 fn cli_render(tasks: Vec<RenderTask>, fonts_dir: Option<PathBuf>, opt: &RenderOptions) {
@@ -166,18 +167,21 @@ fn main() {
             tasks,
             all_input_colors,
             all_svg_colors,
+            include_alpha,
         } => cli_render(
             tasks,
             fonts,
             &RenderOptions {
                 all_input_colors,
                 all_svg_colors,
+                include_alpha,
             },
         ),
         Options::RenderStdin {
             fonts,
             all_input_colors,
             all_svg_colors,
+            include_alpha,
         } => {
             let input: String = {
                 let stdin = io::stdin();
@@ -200,9 +204,14 @@ fn main() {
                 &RenderOptions {
                     all_input_colors,
                     all_svg_colors,
+                    include_alpha,
                 },
             );
         }
-        Options::Colors { paths, count } => cli_colors(paths, count),
+        Options::Colors {
+            paths,
+            count,
+            include_alpha,
+        } => cli_colors(paths, count, include_alpha),
     }
 }

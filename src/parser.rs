@@ -241,7 +241,7 @@ fn non_color_text(input: &Input) -> Result {
     recognize(many1(preceded(not(color_with_fill_opacity), take(1usize))))(input)
 }
 
-fn text_with_colors(input: &Input) -> Result<Vec<TextElement>> {
+fn text_with_colors_with_opacity(input: &Input) -> Result<Vec<TextElement>> {
     many0(alt((
         color_with_fill_opacity.map(|x| TextElement::Color(x)),
         non_color_text.map(|x| TextElement::Text(x)),
@@ -249,10 +249,27 @@ fn text_with_colors(input: &Input) -> Result<Vec<TextElement>> {
     .parse(input)
 }
 
-pub fn xml_text(input: &Input) -> std::result::Result<Vec<TextElement>, nom::error::Error<&Input>> {
-    all_consuming(text_with_colors)(input)
-        .finish()
-        .map(|(_rest, vec)| vec)
+fn text_with_colors(input: &Input) -> Result<Vec<TextElement>> {
+    many0(alt((
+        color.map(|x| TextElement::Color(x)),
+        non_color_text.map(|x| TextElement::Text(x)),
+    )))
+    .parse(input)
+}
+
+pub fn xml_text(
+    input: &Input,
+    parse_opacity: bool,
+) -> std::result::Result<Vec<TextElement>, nom::error::Error<&Input>> {
+    if parse_opacity {
+        all_consuming(text_with_colors_with_opacity)(input)
+            .finish()
+            .map(|(_rest, vec)| vec)
+    } else {
+        all_consuming(text_with_colors)(input)
+            .finish()
+            .map(|(_rest, vec)| vec)
+    }
 }
 
 #[cfg(test)]
@@ -319,21 +336,23 @@ mod tests {
     #[test]
     fn test_text() {
         assert_eq!(
-            text_with_colors("apple #000000").unwrap().1,
+            text_with_colors_with_opacity("apple #000000").unwrap().1,
             vec![
                 TextElement::Text("apple "),
                 TextElement::Color(Color::RGB(0, 0, 0))
             ]
         );
         assert_eq!(
-            text_with_colors("apple 0x000000").unwrap().1,
+            text_with_colors_with_opacity("apple 0x000000").unwrap().1,
             vec![
                 TextElement::Text("apple "),
                 TextElement::Color(Color::RGB(0, 0, 0))
             ]
         );
         assert_eq!(
-            text_with_colors("apple rgb(1,2,3) apple").unwrap().1,
+            text_with_colors_with_opacity("apple rgb(1,2,3) apple")
+                .unwrap()
+                .1,
             vec![
                 TextElement::Text("apple "),
                 TextElement::Color(Color::RGB(1, 2, 3)),

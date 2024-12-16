@@ -10,6 +10,8 @@ pub enum Options {
     #[bpaf(command)]
     Colors {
         count: bool,
+        /// Parse alpha values when parsing the SVG
+        include_alpha: bool,
         #[bpaf(positional("PATH"))]
         paths: Vec<PathBuf>,
     },
@@ -21,6 +23,8 @@ pub enum Options {
         all_input_colors: bool,
         /// Assert that all SVG colors appear in the input colors
         all_svg_colors: bool,
+        /// Parse alpha values when parsing the SVG
+        include_alpha: bool,
         #[bpaf(external(render_task), some("at least one task must be specified"))]
         tasks: Vec<RenderTask>,
     },
@@ -32,6 +36,8 @@ pub enum Options {
         all_input_colors: bool,
         /// Assert that all SVG colors appear in the input colors
         all_svg_colors: bool,
+        /// Parse alpha values when parsing the SVG
+        include_alpha: bool,
     },
 }
 
