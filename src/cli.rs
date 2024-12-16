@@ -28,7 +28,7 @@ pub enum Options {
         #[bpaf(external(render_task), some("at least one task must be specified"))]
         tasks: Vec<RenderTask>,
     },
-    /// Same as the `render` command, but pass your tasks through stdin
+    /// Render a single task, but pass your SVG through stdin
     #[bpaf(command)]
     RenderStdin {
         fonts: Option<PathBuf>,
@@ -38,6 +38,8 @@ pub enum Options {
         all_svg_colors: bool,
         /// Parse alpha values when parsing the SVG
         include_alpha: bool,
+        #[bpaf(external(stdin_render_task))]
+        task: StdinRenderTask,
     },
 }
 
@@ -54,6 +56,19 @@ pub struct RenderTask {
     /// Input path of the SVG to be rendered
     #[bpaf(short, long, argument("SVG"))]
     pub input: PathBuf,
+    /// Replace colors in the input SVG with new colors
+    #[bpaf(external(color_mapping), many)]
+    pub color_mappings: Vec<ColorMapping>,
+    #[bpaf(external(tile_setting), optional, group_help("Tiled upscaling"))]
+    pub tile_setting: Option<TileSetting>,
+    /// The output PNBs to render
+    #[bpaf(external(output), some("at least one output must be specified"))]
+    pub outputs: Vec<Output>,
+}
+
+#[derive(Debug, Clone, Bpaf)]
+#[bpaf(adjacent)]
+pub struct StdinRenderTask {
     /// Replace colors in the input SVG with new colors
     #[bpaf(external(color_mapping), many)]
     pub color_mappings: Vec<ColorMapping>,

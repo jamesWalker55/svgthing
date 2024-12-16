@@ -12,7 +12,7 @@ use std::{
     path::PathBuf,
 };
 
-use cli::{Options, RenderTask};
+use cli::{Options, RenderTask, StdinRenderTask};
 use parser::Color;
 
 use crate::{
@@ -158,6 +158,99 @@ fn cli_render(tasks: Vec<RenderTask>, fonts_dir: Option<PathBuf>, opt: &RenderOp
     }
 }
 
+fn cli_stdin_render(
+    mut text: String,
+    task: StdinRenderTask,
+    fonts_dir: Option<PathBuf>,
+    opt: &RenderOptions,
+) {
+    let fontdb = {
+        let mut db = resvg::usvg::fontdb::Database::new();
+        if let Some(path) = fonts_dir {
+            db.load_fonts_dir(path);
+        }
+        db
+    };
+
+    {
+        // parse colors in the SVG and map them
+        {
+            let mut color_map: HashMap<Color, Color> = HashMap::new();
+
+            for cm in &task.color_mappings {
+                color_map.insert(cm.old.clone(), cm.new.clone());
+            }
+
+            text = match map_colors(&text, &color_map, opt) {
+                Ok(x) => x,
+                Err(err) => {
+                    println!("failed to map colors: {}", err);
+                    return;
+                }
+            }
+        }
+
+        let tree = resvg::usvg::Tree::from_str(&text, &resvg::usvg::Options::default(), &fontdb)
+            .or_else(|x| {
+                fs::write("error.svg", text).unwrap();
+                Err(x)
+            })
+            .expect("failed to parse svg");
+
+        let scale_1_pixmap = render(&tree).unwrap();
+        let detected_bounds = OnceCell::new();
+
+        for output in &task.outputs {
+            if output.scale == 1.0 {
+                // no scaling, just save the image
+                scale_1_pixmap.save_png(output.output.as_path()).unwrap();
+                continue;
+            }
+
+            if output.scale < 1.0 {
+                todo!("throw error, not supported");
+            }
+
+            let output_path = output.output.as_path();
+
+            let detected_bounds =
+                detected_bounds.get_or_init(|| detect_reaper_bounds(&scale_1_pixmap));
+            let (yellow_bounds, pink_bounds) = detected_bounds
+                .as_ref()
+                .map(|(a, b)| (Some(a), Some(b)))
+                .unwrap_or((None, None));
+
+            // there are bounds, preprocess then upscale
+            let upscale_mode = match &task.tile_setting {
+                Some(ts) => match &ts {
+                    TileSetting::HorizontalButton => UpscaleMode::HORIZONTAL_BUTTON,
+                    TileSetting::VerticalButton => UpscaleMode::VERTICAL_BUTTON,
+                    TileSetting::Grid { tx, ty } => UpscaleMode::Grid {
+                        x: (*tx).into(),
+                        y: (*ty).into(),
+                    },
+                    TileSetting::HorizontalTiles { tx } => {
+                        UpscaleMode::HorizontalTiles((*tx).into())
+                    }
+                    TileSetting::VerticalTiles { ty } => UpscaleMode::VerticalTiles((*ty).into()),
+                },
+                None => UpscaleMode::Normal,
+            };
+
+            let pixmap = render_upscaled(
+                &tree,
+                output.scale,
+                &upscale_mode,
+                pink_bounds,
+                yellow_bounds,
+            )
+            .unwrap();
+
+            pixmap.save_png(&output_path).unwrap();
+        }
+    }
+}
+
 fn main() {
     let opt = cli::options().run();
 
@@ -182,6 +275,7 @@ fn main() {
             all_input_colors,
             all_svg_colors,
             include_alpha,
+            task,
         } => {
             let input: String = {
                 let stdin = io::stdin();
@@ -192,14 +286,10 @@ fn main() {
                     .expect("failed to read stdin");
                 String::from_utf8(buf).expect("input is invalid utf8")
             };
-            let input_split = shell_words::split(input.as_str())
-                .expect("failed to parse stdin as UNIX arguments");
-            let tasks = cli::render_tasks()
-                .run_inner(input_split.as_slice())
-                .expect("failed to parse stdin as render tasks");
 
-            cli_render(
-                tasks.tasks,
+            cli_stdin_render(
+                input,
+                task,
                 fonts,
                 &RenderOptions {
                     all_input_colors,
