@@ -19,7 +19,8 @@ pub fn get_colors(xml: &str) -> Result<HashSet<Color>, String> {
 pub fn map_colors(
     xml: &str,
     color_map: &HashMap<Color, Color>,
-    strict: bool,
+    all_input_colors: bool,
+    all_svg_colors: bool,
 ) -> Result<String, String> {
     let mut unused_colors: HashSet<Color> = color_map.keys().cloned().collect();
     let result: Result<String, String> = parser::xml_text(xml.into())
@@ -38,7 +39,7 @@ pub fn map_colors(
                         Ok(new_color.to_string().into())
                     }
                     None => {
-                        if strict {
+                        if all_svg_colors {
                             Err(format!(
                                 "failed to map colors {:?} - svg color not in map",
                                 old_color
@@ -52,7 +53,7 @@ pub fn map_colors(
         })
         .collect();
     let result = result?;
-    if unused_colors.len() != 0 {
+    if all_input_colors && unused_colors.len() != 0 {
         return Err(format!(
             "failed to map colors {:?} - colors not found in svg",
             unused_colors

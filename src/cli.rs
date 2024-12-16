@@ -17,7 +17,10 @@ pub enum Options {
     #[bpaf(command)]
     Render {
         fonts: Option<PathBuf>,
-        strict: bool,
+        /// Assert that all input colors are used in the SVG
+        all_input_colors: bool,
+        /// Assert that all SVG colors appear in the input colors
+        all_svg_colors: bool,
         #[bpaf(external(render_task), some("at least one task must be specified"))]
         tasks: Vec<RenderTask>,
     },
@@ -25,7 +28,10 @@ pub enum Options {
     #[bpaf(command)]
     RenderStdin {
         fonts: Option<PathBuf>,
-        strict: bool,
+        /// Assert that all input colors are used in the SVG
+        all_input_colors: bool,
+        /// Assert that all SVG colors appear in the input colors
+        all_svg_colors: bool,
     },
 }
 
