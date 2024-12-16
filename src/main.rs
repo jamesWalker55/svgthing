@@ -59,12 +59,12 @@ fn cli_colors(paths: Vec<PathBuf>, print_count: bool) {
     }
 }
 
-fn cli_render(
-    tasks: Vec<RenderTask>,
-    fonts_dir: Option<PathBuf>,
-    all_input_colors: bool,
-    all_svg_colors: bool,
-) {
+pub(crate) struct RenderOptions {
+    pub(crate) all_input_colors: bool,
+    pub(crate) all_svg_colors: bool,
+}
+
+fn cli_render(tasks: Vec<RenderTask>, fonts_dir: Option<PathBuf>, opt: &RenderOptions) {
     let fontdb = {
         let mut db = resvg::usvg::fontdb::Database::new();
         if let Some(path) = fonts_dir {
@@ -87,7 +87,7 @@ fn cli_render(
                 color_map.insert(cm.old.clone(), cm.new.clone());
             }
 
-            text = match map_colors(&text, &color_map, all_input_colors, all_svg_colors) {
+            text = match map_colors(&text, &color_map, opt) {
                 Ok(x) => x,
                 Err(err) => {
                     println!("failed to map colors: {}: {}", path.display(), err);
@@ -166,7 +166,14 @@ fn main() {
             tasks,
             all_input_colors,
             all_svg_colors,
-        } => cli_render(tasks, fonts, all_input_colors, all_svg_colors),
+        } => cli_render(
+            tasks,
+            fonts,
+            &RenderOptions {
+                all_input_colors,
+                all_svg_colors,
+            },
+        ),
         Options::RenderStdin {
             fonts,
             all_input_colors,
@@ -187,7 +194,14 @@ fn main() {
                 .run_inner(input_split.as_slice())
                 .expect("failed to parse stdin as render tasks");
 
-            cli_render(tasks.tasks, fonts, all_input_colors, all_svg_colors);
+            cli_render(
+                tasks.tasks,
+                fonts,
+                &RenderOptions {
+                    all_input_colors,
+                    all_svg_colors,
+                },
+            );
         }
         Options::Colors { paths, count } => cli_colors(paths, count),
     }
