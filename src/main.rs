@@ -82,8 +82,13 @@ fn cli_render(tasks: Vec<RenderTask>, fonts_dir: Option<PathBuf>, strict: bool) 
                 color_map.insert(cm.old.clone(), cm.new.clone());
             }
 
-            text = map_colors(&text, &color_map, strict)
-                .expect(format!("failed to map colors: {}", path.display()).as_str());
+            text = match map_colors(&text, &color_map, strict) {
+                Ok(x) => x,
+                Err(err) => {
+                    println!("failed to map colors: {}: {}", path.display(), err);
+                    continue;
+                }
+            }
         }
 
         let tree = resvg::usvg::Tree::from_str(&text, &resvg::usvg::Options::default(), &fontdb)
